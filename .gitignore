@@ -22,3 +22,5 @@ env/
 .env
 
 stockwise/settings.py
+
+**/migrations/
