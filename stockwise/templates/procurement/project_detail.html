@@ -3,29 +3,39 @@
 
 {% block title %}Project Detail{% endblock %}
 
-{% block additional_nav %}
-    <li><a href="{% url 'procurement:home_procurement' %}">Procurement Home</a></li>
-    <li><a href="{% url 'procurement:projects_list' %}">Projects List</a></li>
-{% endblock %}
-
-{% block page_heading %}Project: {{ project.project_name }}{% endblock %}
-
 {% block content %}
-    <h3>Location: {{ project.project_location }}</h3>
+<section class="bg-surface/80 rounded-xl shadow-lg p-6 sm:p-10 border border-primary max-w-4xl mx-auto">
+  <h2 class="text-2xl sm:text-3xl font-bold text-primary mb-4">Project: {{ project.project_name }}</h2>
+  <p class="text-secondary text-base sm:text-lg mb-6">📍 Location: {{ project.project_location }}</p>
 
-    <h4>Inventory Materials</h4>
-    <ul>
+  <h3 class="text-xl font-semibold text-muted mb-3">Inventory Materials</h3>
+  <div class="bg-surface border border-muted rounded-lg p-4 mb-6">
+    {% if materials %}
+      <ul class="space-y-2 text-secondary">
         {% for material in materials %}
-            <li>{{ material.material_name }} ({{ material.material_type }}) - {{ material.current_amount }} {{ material.unit }}</li>
-        {% empty %}
-            <li>No materials found.</li>
+        <li class="border-b border-muted pb-2">
+          <span class="font-semibold">{{ material.material_name }}</span> ({{ material.material_type }}) —
+          <span class="text-muted">{{ material.current_amount }} {{ material.unit }}</span>
+        </li>
         {% endfor %}
-    </ul>
+      </ul>
+    {% else %}
+      <p class="text-muted">No materials found.</p>
+    {% endif %}
+  </div>
 
+  <div class="flex flex-col sm:flex-row gap-4">
     <a href="{% url 'procurement:purchase_request_create' project.project_id %}">
-        <button>Request Material</button>
+      <button class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full sm:w-auto">
+        ➕ Request Materials for this Project
+      </button>
     </a>
 
-    <br>
-    <a href="{% url 'procurement:projects_list' %}">Back to Projects List</a>
+    <a href="{% url 'procurement:projects_list' %}">
+      <button class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full sm:w-auto">
+        ← Back to Projects List
+      </button>
+    </a>
+  </div>
+</section>
 {% endblock %}

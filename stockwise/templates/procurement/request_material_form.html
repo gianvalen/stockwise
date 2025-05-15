@@ -3,14 +3,56 @@
 {% block title %}Request Material for {{ project.project_name }}{% endblock %}
 
 {% block content %}
-<h2>Request Material for {{ project.project_name }}</h2>
+<section class="bg-surface/80 rounded-xl shadow-lg p-6 sm:p-10 border border-primary max-w-3xl mx-auto">
+  <h2 class="text-2xl sm:text-3xl font-bold text-primary mb-6">Request Materials for {{ project.project_name }}</h2>
 
-<form method="post">
+  <form method="post" class="space-y-6">
     {% csrf_token %}
-    {{ form.as_p }}
 
-    <button type="submit">Submit Request</button>
-</form>
+    <div class="space-y-4">
 
-<a href="{% url 'procurement:projects_list' %}">Back to Projects</a>
+      <!-- Material Field -->
+      <div>
+        <label for="{{ form.material.id_for_label }}" class="block text-sm font-medium text-secondary mb-1">
+          {{ form.material.label }}
+        </label>
+        <select name="{{ form.material.html_name }}" id="{{ form.material.id_for_label }}"
+                class="w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary">
+          {% for val, label in form.material.field.choices %}
+            <option value="{{ val }}" {% if form.material.value|stringformat:"s" == val|stringformat:"s" %}selected{% endif %}>
+              {{ label }}
+            </option>
+          {% endfor %}
+        </select>
+        {% for error in form.material.errors %}
+          <p class="text-sm text-red-400">{{ error }}</p>
+        {% endfor %}
+      </div>
+
+      <!-- Quantity Field -->
+      <div>
+        <label for="{{ form.quantity.id_for_label }}" class="block text-sm font-medium text-secondary mb-1">
+          {{ form.quantity.label }}
+        </label>
+        <input type="number" name="{{ form.quantity.html_name }}" id="{{ form.quantity.id_for_label }}"
+               value="{{ form.quantity.value|default_if_none:'' }}"
+               class="w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary" />
+        {% for error in form.quantity.errors %}
+          <p class="text-sm text-red-400">{{ error }}</p>
+        {% endfor %}
+      </div>
+
+    <!-- Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 mt-6">
+      <button type="submit" class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full sm:w-auto">
+        Submit Request
+      </button>
+      <a href="{% url 'procurement:projects_list' %}">
+        <button type="button" class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full sm:w-auto">
+          ← Back to Projects
+        </button>
+      </a>
+    </div>
+  </form>
+</section>
 {% endblock %}
