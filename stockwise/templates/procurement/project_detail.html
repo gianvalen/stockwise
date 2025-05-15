@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.project_name }} Inventory{% endblock %}
+
+{% block additional_nav %}
+    <li><a href="{% url 'procurement:projects_list' %}">Projects List</a></li>
+    <li><a href="{% url 'procurement:home_procurement' %}">Procurement Home</a></li>
+{% endblock %}
+
+{% block page_heading %}Inventory for {{ project.project_name }}{% endblock %}
+
+{% block content %}
+    <h3>Materials in Inventory</h3>
+    {% if materials %}
+        <ul>
+            {% for material in materials %}
+                <li>{{ material.material_name }} ({{ material.material_type }}) - {{ material.current_amount }} {{ material.unit }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No materials found in this inventory.</p>
+    {% endif %}
+    <a href="{% url 'procurement:projects_list' %}">Back to Projects List</a>
+{% endblock %}

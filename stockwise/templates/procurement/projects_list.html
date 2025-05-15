@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Projects List{% endblock %}
+
+{% block additional_nav %}
+    <li><a href="{% url 'procurement:home_procurement' %}">Procurement Home</a></li>
+{% endblock %}
+
+{% block page_heading %}All Projects{% endblock %}
+
+{% block content %}
+    <ul>
+        {% for project in projects %}
+            <li>
+                {{ project.project_name }} - {{ project.project_location }}
+                <a href="{% url 'procurement:project_detail' project.project_id %}">
+                    <button>View Inventory</button>
+                </a>
+            </li>
+        {% empty %}
+            <li>No projects available.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'procurement:home_procurement' %}">Back to Home</a>
+{% endblock %}

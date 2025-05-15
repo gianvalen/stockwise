@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Procurement Home{% endblock %}
+
+{% block additional_nav %}
+    <li><a href="{% url 'procurement:home_procurement' %}">Procurement Home</a></li>
+{% endblock %}
+
+{% block page_heading %}Welcome to Procurement Home{% endblock %}
+
+{% block content %}
+    <a href="{% url 'procurement:projects_list' %}">
+        <button>View Projects</button>
+    </a>
+{% endblock %}
