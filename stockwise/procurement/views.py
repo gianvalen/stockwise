@@ -1,16 +1,23 @@
-import uuid
 from django.shortcuts import render, redirect, get_object_or_404
-from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from user_management.decorators import user_type_required
 from stock_management.models import Project, ProjectInventory, InventoryMaterial, PurchaseRequest
+from django.utils import timezone
 from .forms import RequestMaterialForm 
 
+import uuid
+
+@login_required
+@user_type_required('procurement')
 def home_procurement(request):
     return render(request, 'home_procurement.html')
 
+@login_required
 def projects_list(request):
     projects = Project.objects.all()
     return render(request, 'projects_list.html', {'projects': projects})
 
+@login_required
 def project_detail(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
 
@@ -57,9 +64,7 @@ def request_material(request, project_id):
     else:
         form = RequestMaterialForm()
 
-    return render(request, 'procurement/request_material_form.html', {'form': form, 'project': project})
-
-
+    return render(request, 'request_material_form.html', {'form': form, 'project': project})
 
 import random
 import string

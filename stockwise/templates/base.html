@@ -1,12 +1,29 @@
 <!doctype html>
+{% load static %}
 <html lang="en-US">
 <head>
     <title>{% block title %}{% endblock %}</title>
 </head>
 
 <body>
+    <!-- User Authentication Info -->
+    <div>
+        {% if request.user.is_authenticated %}
+            <p>Hello, {{ request.user.username }}!</p>
+            <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit">Log out</button>
+            </form>
+        {% else %}
+            <a href="{% url 'user_management:login' %}">Login</a> | 
+            <a href="{% url 'user_management:register' %}">Register</a>
+        {% endif %}
+    </div>
+
+    <!-- Page Heading -->
     <h1>{% block page_heading %}{% endblock %}</h1>
 
+    <!-- Main Content -->
     <div>
         {% block content %}{% endblock %}
     </div>
