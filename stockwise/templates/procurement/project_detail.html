@@ -10,12 +10,12 @@
 
   <h3 class="text-xl font-semibold text-muted mb-3">Inventory Materials</h3>
   <div class="bg-surface border border-muted rounded-lg p-4 mb-6">
-    {% if materials %}
+    {% if materials_in_inventory %}
       <ul class="space-y-2 text-secondary">
-        {% for material in materials %}
+        {% for im in materials_in_inventory %}
         <li class="border-b border-muted pb-2">
-          <span class="font-semibold">{{ material.material_name }}</span> ({{ material.material_type }}) —
-          <span class="text-muted">{{ material.current_amount }} {{ material.unit }}</span>
+          <span class="font-semibold">{{ im.material.material_name }}</span> ({{ im.material.material_type }}) —
+          <span class="text-muted">{{ im.quantity }} {{ im.material.unit }}</span>
         </li>
         {% endfor %}
       </ul>
@@ -27,7 +27,7 @@
   <div class="flex flex-col sm:flex-row gap-4">
     <a href="{% url 'procurement:purchase_request_create' project.project_id %}">
       <button class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full sm:w-auto">
-        ➕ Request Materials for this Project
+        Request Materials for this Project
       </button>
     </a>
 

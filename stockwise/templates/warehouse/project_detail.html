@@ -15,11 +15,11 @@
 
     <h4>Inventory Materials</h4>
     <ul>
-        {% for material in materials %}
+        {% for im in materials_in_inventory %}
           <li>
-            {{ material.material_name }} ({{ material.material_type }}) - 
-            {{ material.current_amount }} {{ material.unit }} 
-            | <a href="{% url 'warehouse:update_material' project.project_id material.material_id %}">Update</a>
+            {{ im.material.material_name }} ({{ im.material.material_type }}) - 
+            {{ im.quantity }} {{ im.material.unit }} 
+            | <a href="{% url 'warehouse:update_material' project.project_id im.material.material_id %}">Update</a>
         </li>
         {% empty %}
             <li>No materials found.</li>
