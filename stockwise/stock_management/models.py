@@ -127,8 +127,11 @@ class Inventory(models.Model):
     storage_location = models.CharField(max_length=255)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'inventory'
+
+    def __str__(self):
+        return f"{self.inventory_id} - {self.storage_location}"
 
 
 class InventoryMaterial(models.Model):
@@ -136,7 +139,7 @@ class InventoryMaterial(models.Model):
     inventory = models.ForeignKey(Inventory, models.DO_NOTHING)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'inventory_material'
 
 
@@ -147,7 +150,7 @@ class InventoryUpdate(models.Model):
     date_updated = models.DateTimeField()
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'inventory_update'
 
 
@@ -160,7 +163,7 @@ class Material(models.Model):
     low_stock_threshold = models.IntegerField()
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'material'
 
     def __str__(self):
@@ -176,7 +179,7 @@ class Offer(models.Model):
     offer_status = models.CharField(max_length=255)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'offer'
 
 
@@ -185,7 +188,7 @@ class OfferPurchaseOrder(models.Model):
     offer = models.ForeignKey(Offer, models.DO_NOTHING)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'offer_purchase_order'
 
 
@@ -194,7 +197,7 @@ class OfferRequestDetail(models.Model):
     request_detail = models.ForeignKey('RequestDetail', models.DO_NOTHING)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'offer_request_detail'
 
 
@@ -204,7 +207,7 @@ class Project(models.Model):
     project_location = models.CharField(max_length=255)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'project'
 
     def __str__(self):
@@ -216,8 +219,11 @@ class ProjectInventory(models.Model):
     inventory = models.ForeignKey(Inventory, models.DO_NOTHING)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'project_inventory'
+
+    def __str__(self):
+        return f"{self.project} - {self.inventory}"
 
 
 class PurchaseOrder(models.Model):
@@ -226,11 +232,8 @@ class PurchaseOrder(models.Model):
     po_status = models.CharField(max_length=255)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'purchase_order'
-
-    def __str__(self):
-        return f"{self.po_id} - {self.po_status}"
 
 
 class PurchaseRequest(models.Model):
@@ -238,13 +241,11 @@ class PurchaseRequest(models.Model):
     request_date = models.DateTimeField()
     last_updated = models.DateTimeField(blank=True, null=True)
     request_status = models.CharField(max_length=255)
+    project = models.ForeignKey(Project, models.DO_NOTHING)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'purchase_request'
-
-    def __str__(self):
-        return f"{self.pr_id} - {self.request_status}"
 
 
 class RequestDetail(models.Model):
@@ -254,8 +255,5 @@ class RequestDetail(models.Model):
     quantity = models.IntegerField()
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'request_detail'
-
-    def __str__(self):
-        return f"{self.material} - {self.quantity}"
