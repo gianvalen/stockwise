@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Project Manager Home{% endblock %}
+
+{% block content %}
+<h1>Welcome, Project Manager!</h1>
+
+<div>
+    <a href="{% url 'project_management:pending_requests' %}">
+        <button>Pending Requests</button>
+    </a>
+    <a href="{% url 'procurement:projects_list' %}">
+        <button>View Projects</button>
+    </a>
+    <a href="{% url 'project_management:transfer_materials' %}">
+    <button>Transfer Materials</button>
+    </a>
+</div>
+{% endblock %}
