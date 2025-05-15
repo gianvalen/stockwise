@@ -52,7 +52,7 @@ class Material(models.Model):
         db_table = 'material'
 
     def __str__(self):
-        return f"{self.material_name}"
+        return f"{self.material_name} ({self.unit})"
 
 
 class Offer(models.Model):
@@ -125,7 +125,12 @@ class PurchaseRequest(models.Model):
     pr_id = models.CharField(primary_key=True, max_length=5)
     request_date = models.DateTimeField()
     last_updated = models.DateTimeField(blank=True, null=True)
-    request_status = models.CharField(max_length=255)
+    STATUS_CHOICES = [
+        ('Waiting for Approval', 'Waiting for Approval'),
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+    ]
+    request_status = models.CharField(max_length=255, choices=STATUS_CHOICES)
     project = models.ForeignKey(Project, models.DO_NOTHING)
 
     class Meta:

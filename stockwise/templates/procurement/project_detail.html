@@ -1,24 +1,31 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}{{ project.project_name }} Inventory{% endblock %}
+{% block title %}Project Detail{% endblock %}
 
 {% block additional_nav %}
-    <li><a href="{% url 'procurement:projects_list' %}">Projects List</a></li>
     <li><a href="{% url 'procurement:home_procurement' %}">Procurement Home</a></li>
+    <li><a href="{% url 'procurement:projects_list' %}">Projects List</a></li>
 {% endblock %}
 
-{% block page_heading %}Inventory for {{ project.project_name }}{% endblock %}
+{% block page_heading %}Project: {{ project.project_name }}{% endblock %}
 
 {% block content %}
-    <h3>Materials in Inventory</h3>
-    {% if materials %}
-        <ul>
-            {% for material in materials %}
-                <li>{{ material.material_name }} ({{ material.material_type }}) - {{ material.current_amount }} {{ material.unit }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No materials found in this inventory.</p>
-    {% endif %}
+    <h3>Location: {{ project.project_location }}</h3>
+
+    <h4>Inventory Materials</h4>
+    <ul>
+        {% for material in materials %}
+            <li>{{ material.material_name }} ({{ material.material_type }}) - {{ material.current_amount }} {{ material.unit }}</li>
+        {% empty %}
+            <li>No materials found.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'procurement:purchase_request_create' project.project_id %}">
+        <button>Request Material</button>
+    </a>
+
+    <br>
     <a href="{% url 'procurement:projects_list' %}">Back to Projects List</a>
 {% endblock %}
