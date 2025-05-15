@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'procurement',
     'project_management',
     'supply',
+    'warehouse',
 ]
 
 MIDDLEWARE = [
@@ -66,6 +67,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR, 'templates', 'registration'),
             os.path.join(BASE_DIR, 'templates', 'procurement'),
             os.path.join(BASE_DIR, 'templates', 'supplier'),
+            os.path.join(BASE_DIR, 'templates', 'warehouse'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {

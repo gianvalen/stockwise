@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Warehouse Home{% endblock %}
+
+{% block additional_nav %}
+    <li><a href="{% url 'warehouse:home_warehouse' %}">Warehouse Home</a></li>
+{% endblock %}
+
+{% block page_heading %}Welcome to Warehouse Home{% endblock %}
+
+{% block content %}
+    <a href="{% url 'warehouse:projects_list' %}">
+        <button>View Projects</button>
+    </a>
+{% endblock %}

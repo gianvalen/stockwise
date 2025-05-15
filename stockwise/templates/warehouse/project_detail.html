@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Project Detail{% endblock %}
+
+{% block additional_nav %}
+    <li><a href="{% url 'warehouse:home_warehouse' %}">Warehouse Home</a></li>
+    <li><a href="{% url 'warehouse:projects_list' %}">Projects List</a></li>
+{% endblock %}
+
+{% block page_heading %}Project: {{ project.project_name }}{% endblock %}
+
+{% block content %}
+    <h3>Location: {{ project.project_location }}</h3>
+
+    <h4>Inventory Materials</h4>
+    <ul>
+        {% for material in materials %}
+          <li>
+            {{ material.material_name }} ({{ material.material_type }}) - 
+            {{ material.current_amount }} {{ material.unit }} 
+            | <a href="{% url 'warehouse:update_material' project.project_id material.material_id %}">Update</a>
+        </li>
+        {% empty %}
+            <li>No materials found.</li>
+        {% endfor %}
+    </ul>
+    <br>
+    <a href="{% url 'warehouse:projects_list' %}">Back to Projects List</a>
+{% endblock %}
