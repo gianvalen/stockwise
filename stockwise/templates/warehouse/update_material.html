@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Update Material{% endblock %}
+{% block page_heading %}Update Amount of {{ material.material_name }}{% endblock %}
+{% block content %}
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Update</button>
+</form>
+<br>
+<a href="{% url 'warehouse:projects_list' %}">Back to Projects</a>
+{% endblock %}
