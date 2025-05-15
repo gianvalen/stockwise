@@ -6,43 +6,61 @@
 <section class="bg-surface/80 rounded-xl shadow-lg p-6 sm:p-10 border border-primary max-w-3xl mx-auto">
   <h2 class="text-2xl sm:text-3xl font-bold text-primary mb-6">Request Materials for {{ project.project_name }}</h2>
 
-  <form method="post" class="space-y-6">
+  <form method="post" id="material-form" class="space-y-6">
     {% csrf_token %}
+    {{ formset.management_form }}
 
-    <div class="space-y-4">
+    <div id="formset-container" class="space-y-6">
+      {% for form in formset %}
+        <div class="formset-form border-b border-muted pb-4 relative">
+          <!-- Remove Button with trash can icon -->
+          <button type="button" class="remove-form absolute top-0 right-0 text-white-500 hover:text-red-700" title="Remove this material" aria-label="Remove material">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7L5 7M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M10 11v6M14 11v6M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2" />
+            </svg>
+          </button>
 
-      <!-- Material Field -->
-      <div>
-        <label for="{{ form.material.id_for_label }}" class="block text-sm font-medium text-secondary mb-1">
-          {{ form.material.label }}
-        </label>
-        <select name="{{ form.material.html_name }}" id="{{ form.material.id_for_label }}"
-                class="w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary">
-          {% for val, label in form.material.field.choices %}
-            <option value="{{ val }}" {% if form.material.value|stringformat:"s" == val|stringformat:"s" %}selected{% endif %}>
-              {{ label }}
-            </option>
-          {% endfor %}
-        </select>
-        {% for error in form.material.errors %}
-          <p class="text-sm text-red-400">{{ error }}</p>
-        {% endfor %}
-      </div>
+          <!-- Material Field -->
+          <div class="mb-4">
+            <label for="{{ form.material.id_for_label }}" class="block text-sm font-medium text-secondary mb-1">
+              {{ form.material.label }}
+            </label>
+            <select name="{{ form.material.html_name }}" id="{{ form.material.id_for_label }}"
+                    class="w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary">
+              {% for val, label in form.fields.material.choices %}
+                <option value="{{ val }}" {% if form.material.value|stringformat:"s" == val|stringformat:"s" %}selected{% endif %}>
+                  {{ label }}
+                </option>
+              {% endfor %}
+            </select>
+            {% for error in form.material.errors %}
+              <p class="text-sm text-red-400">{{ error }}</p>
+            {% endfor %}
+          </div>
 
-      <!-- Quantity Field -->
-      <div>
-        <label for="{{ form.quantity.id_for_label }}" class="block text-sm font-medium text-secondary mb-1">
-          {{ form.quantity.label }}
-        </label>
-        <input type="number" name="{{ form.quantity.html_name }}" id="{{ form.quantity.id_for_label }}"
-               value="{{ form.quantity.value|default_if_none:'' }}"
-               class="w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary" />
-        {% for error in form.quantity.errors %}
-          <p class="text-sm text-red-400">{{ error }}</p>
-        {% endfor %}
-      </div>
+          <!-- Quantity Field -->
+          <div>
+            <label for="{{ form.quantity.id_for_label }}" class="block text-sm font-medium text-secondary mb-1">
+              {{ form.quantity.label }}
+            </label>
+            <input type="number" name="{{ form.quantity.html_name }}" id="{{ form.quantity.id_for_label }}"
+                   value="{{ form.quantity.value|default_if_none:'' }}"
+                   class="w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary" />
+            {% for error in form.quantity.errors %}
+              <p class="text-sm text-red-400">{{ error }}</p>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
 
-    <!-- Buttons -->
+    <!-- Add another button -->
+    <div>
+      <button type="button" id="add-form-btn"
+              class="mt-2 text-sm text-primary hover:underline transition">+ Add another material</button>
+    </div>
+
+    <!-- Submit + Back Buttons -->
     <div class="flex flex-col sm:flex-row gap-4 mt-6">
       <button type="submit" class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full sm:w-auto">
         Submit Request
@@ -55,4 +73,51 @@
     </div>
   </form>
 </section>
+
+<!-- Clone and remove script -->
+<script>
+  const formsetContainer = document.getElementById('formset-container');
+  const addFormBtn = document.getElementById('add-form-btn');
+  const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+
+  // Add new form
+  addFormBtn.addEventListener('click', () => {
+    const currentFormCount = parseInt(totalForms.value);
+    const newFormHtml = document.querySelector('.formset-form').outerHTML
+      .replace(/form-(\d+)-/g, `form-${currentFormCount}-`)
+      .replace(/form_(\d+)_/g, `form_${currentFormCount}_`);
+
+    formsetContainer.insertAdjacentHTML('beforeend', newFormHtml);
+    totalForms.value = currentFormCount + 1;
+  });
+
+  // Remove form on click of remove button (event delegation)
+  formsetContainer.addEventListener('click', (e) => {
+    if (e.target.closest('.remove-form')) {
+      const button = e.target.closest('.remove-form');
+      const formToRemove = button.closest('.formset-form');
+      formToRemove.remove();
+
+      // After removal, update TOTAL_FORMS to the new count
+      const forms = formsetContainer.querySelectorAll('.formset-form');
+      totalForms.value = forms.length;
+
+      // Re-index the forms to keep form numbering consistent
+      forms.forEach((form, index) => {
+        // Update all name, id, and for attributes for inputs and labels inside this form
+        form.querySelectorAll('label, select, input').forEach(el => {
+          if (el.htmlFor) {
+            el.htmlFor = el.htmlFor.replace(/form-(\d+)-/, `form-${index}-`);
+          }
+          if (el.id) {
+            el.id = el.id.replace(/form-(\d+)-/, `form-${index}-`);
+          }
+          if (el.name) {
+            el.name = el.name.replace(/form-(\d+)-/, `form-${index}-`);
+          }
+        });
+      });
+    }
+  });
+</script>
 {% endblock %}
