@@ -18,11 +18,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
-
 from .views import HomePageView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("__reload__/", include("django_browser_reload.urls")),
     path('', HomePageView.as_view(), name='home'),
     path('procurement/', include('procurement.urls')),
     path('user/', include('user_management.urls')),
