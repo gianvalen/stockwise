@@ -2,97 +2,151 @@
 {% load static %}
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% block title %}StockWise{% endblock %}</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{% block title %}StockWise{% endblock %}</title>
 
-  <!-- Google Fonts: Manrope -->
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+<!-- Google Fonts: Manrope -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
     tailwind.config = {
-      theme: {
+    theme: {
         extend: {
-          fontFamily: {
+        fontFamily: {
             sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-          },
-          colors: {
+        },
+        colors: {
             surface: '#2E2E2E',
             primary: '#D9B650',
             secondary: '#FFFFFF',
             muted: '#CFC497',
             overlay: 'rgba(46, 46, 46, 0.75)',
-          }
         }
-      }
+        }
     }
-  </script>
-  {% block extra_head %}{% endblock %}
+    }
+</script>
+{% block extra_head %}{% endblock %}
 </head>
 <body class="relative font-sans text-secondary min-h-screen flex flex-col bg-surface">
 
-  <!-- Background -->
-  <div class="absolute inset-0 bg-[url('/static/images/background.jpg')] bg-cover bg-center z-0"></div>
-  <div class="absolute inset-0 bg-surface/75 z-0"></div>
+<!-- Background -->
+<div class="absolute inset-0 bg-[url('/static/images/background.jpg')] bg-cover bg-center z-0"></div>
+<div class="absolute inset-0 bg-surface/75 z-0"></div>
 
-  <!-- Foreground Content -->
-  <div class="relative z-10 flex-grow flex flex-col">
+<!-- Foreground Content -->
+<div class="relative z-10 flex-grow flex flex-col">
 
     <!-- Navbar -->
     {% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}
     <header class="bg-surface/90 shadow-lg">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 flex justify-between items-center flex-wrap">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 flex justify-between items-center flex-wrap">
         <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wide text-primary mb-2 sm:mb-0">🏗️ StockWise</h1>
 
-        {% if request.user.is_authenticated and request.user.profile.user_type == 'procurement' %}
-        <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
-          <a href="{% url 'procurement:home_procurement' %}"
-             class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_procurement' %}text-primary font-bold{% endif %}">
-            Home
-          </a>
-          <a href="{% url 'procurement:projects_list' %}"
-             class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
-            Projects
-          </a>
+        {% if request.user.is_authenticated %}
+            {% if request.user.profile.user_type == 'procurement' %}
+            <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
+                <a href="{% url 'procurement:home_procurement' %}"
+                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_procurement' %}text-primary font-bold{% endif %}">
+                    Home
+                </a>
+                <a href="{% url 'procurement:projects_list' %}"
+                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                    Projects
+                </a>
+                <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
+                    Logout
+                    </button>
+                </form>
+            </nav>
 
-          <!-- Logout Form -->
-          <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
-              Logout
-            </button>
-          </form>
-        </nav>
+            {% elif request.user.profile.user_type == 'supplier' %}
+            <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
+                <a href="{% url 'supply:home_supplier' %}"
+                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_supplier' %}text-primary font-bold{% endif %}">
+                    Home
+                </a>
+                <a href="{% url 'supply:requests_list' %}"
+                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'requests_list' %}text-primary font-bold{% endif %}">
+                    Purchase Requests
+                </a>
+                <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
+                    Logout
+                    </button>
+                </form>
+            </nav>
+
+            {% elif request.user.profile.user_type == 'manager' %}
+            <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
+                <a href="{% url 'project_management:home_manager' %}"
+                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_pm' %}text-primary font-bold{% endif %}">
+                    Home
+                </a>
+                <a href="{% url 'project_management:pending_requests' %}"
+                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'pending_requests' %}text-primary font-bold{% endif %}">
+                    Pending Requests
+                </a>
+                <a href="{% url 'procurement:projects_list' %}"
+                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                    Projects
+                </a>
+                <a href="{% url 'project_management:transfer_materials' %}"
+                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'transfer_materials' %}text-primary font-bold{% endif %}">
+                    Transfer Materials
+                </a>
+                <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
+                    Logout
+                    </button>
+                </form>
+            </nav>
+
+            {% elif request.user.profile.user_type == 'warehouse' %}
+            <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
+                <a href="{% url 'warehouse:home_warehouse' %}"
+                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_warehouse' %}text-primary font-bold{% endif %}">
+                    Home
+                </a>
+
+            <a href="{% url 'warehouse:projects_list' %}"
+                class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                Projects
+            </a>
+                <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
+                    Logout
+                    </button>
+                </form>
+            </nav>
+            {% endif %}
         {% endif %}
-      </div>
+    </div>
     </header>
     {% endif %}
 
     <!-- Main Content -->
     <main class="flex-grow max-w-5xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-16">
-      {% block content %}
-      <section class="bg-surface/80 rounded-xl shadow-lg p-6 sm:p-10 border border-primary max-w-3xl mx-auto">
-        <h2 class="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6 text-primary leading-tight">
-          Streamline Your Inventory and Procurement Process
-        </h2>
-        <p class="text-secondary text-base sm:text-lg leading-relaxed">
-          Consolidate and automate your inventory and procurement procedures to ensure effectiveness, precision, and real-time visibility of stock and purchase activities.
-          StockWise offers role-based access control, real-time stock tracking, materials delivery updates, purchase request tracking, documentation management, and monthly material usage reports.
-        </p>
-      </section>
-      {% endblock %}
+    {% block content %}
+    {% endblock %}
     </main>
 
     <!-- Footer -->
     <footer class="bg-surface/90 text-muted py-4 sm:py-6 mt-auto">
-      <div class="max-w-7xl mx-auto text-center text-xs sm:text-sm text-muted px-4">
+    <div class="max-w-7xl mx-auto text-center text-xs sm:text-sm text-muted px-4">
         &copy; 2025 StockWise. All rights reserved.
-      </div>
+    </div>
     </footer>
 
-  </div>
+</div>
 
-  {% block scripts %}{% endblock %}
+{% block scripts %}{% endblock %}
 </body>
 </html>

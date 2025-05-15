@@ -2,17 +2,21 @@
 {% block title %}Project Manager Home{% endblock %}
 
 {% block content %}
-<h1>Welcome, Project Manager!</h1>
+<section class="bg-surface/80 rounded-xl shadow-lg p-6 sm:p-10 border border-primary max-w-3xl mx-auto mb-10">
+  <h2 class="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6 text-primary leading-tight">
+  Welcome to StockWise, {{ request.user.first_name }}!
+  </h2>
+  <p class="text-secondary text-base sm:text-lg leading-relaxed">
+    Streamline your inventory and procurement process. Consolidate and automate your inventory and procurement procedures to ensure effectiveness, precision, and real-time visibility of stock and purchase activities.
+    StockWise offers role-based access control, real-time stock tracking, materials delivery updates, purchase request tracking, documentation management, and monthly material usage reports.
+  </p>
+</section>
 
-<div>
-    <a href="{% url 'project_management:pending_requests' %}">
-        <button>Pending Requests</button>
-    </a>
-    <a href="{% url 'procurement:projects_list' %}">
-        <button>View Projects</button>
-    </a>
-    <a href="{% url 'project_management:transfer_materials' %}">
-    <button>Transfer Materials</button>
-    </a>
+<div class="text-center">
+  <a href="{% url 'procurement:projects_list' %}">
+    <button class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full sm:w-auto">
+      View Projects
+    </button>
+  </a>
 </div>
 {% endblock %}
