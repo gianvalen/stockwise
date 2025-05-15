@@ -23,11 +23,11 @@ def project_detail(request, project_id):
     project_inventory = get_object_or_404(ProjectInventory, project=project)
 
     # Get all InventoryMaterial entries for the inventory
-    materials_in_inventory = InventoryMaterial.objects.filter(inventory=project_inventory.inventory)
+    materials_in_inventory = InventoryMaterial.objects.filter(inventory=project_inventory.inventory).select_related('material')
 
     context = {
         'project': project,
-        'materials': [im.material for im in materials_in_inventory],  # list of Material objects
+        'materials_in_inventory': materials_in_inventory,  # list of Material objects
     }
     return render(request, 'warehouse/project_detail.html', context)
 
@@ -47,12 +47,12 @@ def update_material_quantity(request, project_id, material_id):
 
     # Step 4: Proceed with form handling
     if request.method == 'POST':
-        form = UpdateMaterialForm(request.POST, instance=material)
+        form = UpdateMaterialForm(request.POST, instance=inventory_material)
         if form.is_valid():
             form.save()
             return redirect('warehouse:project_detail', project_id=project.project_id)
     else:
-        form = UpdateMaterialForm(instance=material)
+        form = UpdateMaterialForm(instance=inventory_material)
 
     return render(request, 'update_material.html', {
         'form': form,

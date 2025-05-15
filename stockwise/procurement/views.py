@@ -25,18 +25,14 @@ def project_detail(request, project_id):
     project_inventory = get_object_or_404(ProjectInventory, project=project)
 
     # Get all InventoryMaterial entries for the inventory
-    materials_in_inventory = InventoryMaterial.objects.filter(inventory=project_inventory.inventory)
+    materials_in_inventory = InventoryMaterial.objects.filter(inventory=project_inventory.inventory).select_related('material')
 
     context = {
         'project': project,
-        'materials': [im.material for im in materials_in_inventory],  # list of Material objects
+        'materials_in_inventory': materials_in_inventory,  # Pass InventoryMaterial objects
     }
     return render(request, 'project_detail.html', context)
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.utils import timezone
-from stock_management.models import Project, PurchaseRequest, RequestDetail
-from .forms import RequestMaterialForm
 
 def request_material(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
