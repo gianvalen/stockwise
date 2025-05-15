@@ -1,0 +1,22 @@
+<h1>Transfer Materials</h1>
+
+{% for entry in project_materials %}
+    <h2>Project: {{ entry.project.project_name }}</h2>
+    {% if entry.materials %}
+        <ul>
+            {% for im in entry.materials %}
+                {% if im.quantity > 0 %}
+                <li>
+                    {{ im.material.material_name }} ({{ im.material.unit }}) - Qty: {{ im.quantity }}
+                    <!-- Button/link to transfer form -->
+                    <a href="{% url 'project_management:transfer_material_form' entry.project.project_id im.material.material_id %}">
+                        Transfer
+                    </a>
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No materials found for this project.</p>
+    {% endif %}
+{% endfor %}

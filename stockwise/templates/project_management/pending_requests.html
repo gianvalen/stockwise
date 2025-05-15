@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Purchase Requests{% endblock %}
+
+{% block content %}
+<h1>Purchase Requests</h1>
+
+<!-- Filter Buttons -->
+<div style="margin-bottom: 20px;">
+    <a href="?status=Waiting for Approval">Waiting for Approval</a> |
+    <a href="?status=Approved">Approved</a> |
+    <a href="?status=Not Approved">Not Approved</a> |
+    <a href="{% url 'project_management:pending_requests' %}">Show All</a>
+</div>
+
+{% for pr in purchase_requests %}
+    <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+        <h3>Purchase Request ID: {{ pr.pr_id }}</h3>
+        <p>Status: {{ pr.request_status }}</p>
+        <p>Project: {{ pr.project.project_name }}</p>
+
+        <h4>Request Details:</h4>
+        <ul>
+            {% for detail in pr.requestdetail_set.all %}
+                <li>Material: {{ detail.material.material_name }} | Quantity: {{ detail.quantity }}</li>
+            {% empty %}
+                <li>No request details.</li>
+            {% endfor %}
+        </ul>
+
+        {% if pr.request_status == 'Waiting for Approval' %}
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="pr_id" value="{{ pr.pr_id }}">
+                <input type="hidden" name="action" value="approve">
+                <button type="submit">Approve</button>
+            </form>
+
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="pr_id" value="{{ pr.pr_id }}">
+                <input type="hidden" name="action" value="reject">
+                <button type="submit">Reject</button>
+            </form>
+        {% endif %}
+    </div>
+{% empty %}
+    <p>No Purchase Requests found for this filter.</p>
+{% endfor %}
+{% endblock %}

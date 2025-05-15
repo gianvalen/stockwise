@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Transfer Material</h1>
+
+  <p><strong>Project:</strong> {{ project.project_name }}</p>
+  <p><strong>Material:</strong> {{ material.material_name }} ({{ material.unit }})</p>
+  <p><strong>Current Quantity:</strong> {{ current_qty }}</p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Transfer</button>
+  </form>
+{% endblock %}
