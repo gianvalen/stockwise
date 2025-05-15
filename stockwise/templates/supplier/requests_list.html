@@ -11,11 +11,12 @@
   {% if purchase_requests %}
         <ul class="space-y-3 text-secondary text-base sm:text-lg leading-relaxed">
         {% for pr in purchase_requests %}
-            <li class="hover:bg-primary/10 transition rounded px-4 py-2">
-            <a href="{% url 'supply:requests_detail' pr.pr_id %}" class="font-medium text-secondary hover:text-primary">
-                {{ pr.pr_id }} – {{ pr.project.project_name }} - {{ pr.project.project_location }}
+          <li class="hover:bg-primary/10 transition rounded px-4 py-2">
+            <a href="{% url 'supply:requests_detail' pr.pr_id %}" 
+              class="block w-full text-left font-medium text-secondary hover:text-primary px-4 py-2 rounded hover:bg-primary/20 transition">
+              {{ pr.pr_id }} – {{ pr.project.project_name }} – {{ pr.project.location }}
             </a>
-            </li>
+          </li>
         {% endfor %}
         </ul>
 
