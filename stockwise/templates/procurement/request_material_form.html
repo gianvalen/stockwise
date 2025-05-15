@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Request Material for {{ project.project_name }}{% endblock %}
+
+{% block content %}
+<h2>Request Material for {{ project.project_name }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">Submit Request</button>
+</form>
+
+<a href="{% url 'procurement:projects_list' %}">Back to Projects</a>
+{% endblock %}
