@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.forms import AuthenticationForm
 
 from .forms import UserRegistrationForm
@@ -10,19 +10,31 @@ def register(request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            auth_login(request, user)
+            role = user.profile.user_type
+
+            if role == 'manager':
+                return redirect('project_management:home_manager')
+            elif role == 'warehouse':
+                return redirect('warehouse:home_warehouse')
+            elif role == 'procurement':
+                return redirect('procurement:home_procurement')
+            elif role == 'supplier':
+                return redirect('supply:home_supplier')
+
+            return redirect('login')
     else:
         form = UserRegistrationForm()
 
     return render(request, 'register.html', {'form': form})
 
 
-def login(request):
+def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            login(request, user)
+            auth_login(request, user)
             return redirect('procurement')
     else:
         form = AuthenticationForm()
