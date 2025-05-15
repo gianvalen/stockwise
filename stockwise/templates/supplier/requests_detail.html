@@ -13,7 +13,10 @@
     {% if request_details %}
         <ul>
             {% for detail in request_details %}
-                <li>{{ detail.material.material_name }} – {{ detail.quantity }} {{ detail.material.unit }}</li>
+                <li>
+                    {{ detail.material.material_name }} – {{ detail.quantity }} {{ detail.material.unit }} 
+                    | <a href="{% url 'supply:offer_material' purchase_request.pr_id detail.material.material_id %}">Offer</a>
+                </li>
             {% endfor %}
         </ul>
     {% else %}
