@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Purchase Requests{% endblock %}
+
+{% block page_heading %}All Purchase Requests{% endblock %}
+
+{% block content %}
+    {% if purchase_requests %}
+        <ul>
+            {% for pr in purchase_requests %}
+                <li>
+                    <a href="{% url 'supply:requests_detail' pr.pr_id %}">
+                        {{ pr.pr_id }} – {{ pr.project.project_name }} – {{ pr.request_status }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No purchase requests found.</p>
+    {% endif %}
+    <a href="{% url 'supply:home_supplier' %}">Back to Home</a>
+{% endblock %}

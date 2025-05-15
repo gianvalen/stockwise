@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Purchase Request {{ purchase_request.pr_id }}{% endblock %}
+
+{% block page_heading %}Purchase Request Details{% endblock %}
+
+{% block content %}
+    <p><strong>Project:</strong> {{ purchase_request.project.project_name }}</p>
+    <p><strong>Request Date:</strong> {{ purchase_request.request_date }}</p>
+    <p><strong>Requested By:</strong> {{ purchase_request.requested_by.username }}</p>
+
+    <h3>Materials Requested</h3>
+    {% if request_details %}
+        <ul>
+            {% for detail in request_details %}
+                <li>{{ detail.material.material_name }} – {{ detail.quantity }} {{ detail.material.unit }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No materials in this request.</p>
+    {% endif %}
+
+    <p><a href="{% url 'supply:requests_list' %}">Back to list</a></p>
+{% endblock %}

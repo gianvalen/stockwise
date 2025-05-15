@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Supplier Home{% endblock %}
+
+{% block additional_nav %}
+    <li><a href="{% url 'supply:home_supplier' %}">Supplier Home</a></li>
+{% endblock %}
+
+{% block page_heading %}Welcome to Supplier Home{% endblock %}
+
+{% block content %}
+    <a href="{% url 'supply:requests_list' %}">
+        <button>View Requests</button>
+    </a>
+{% endblock %}
