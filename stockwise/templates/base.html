@@ -1,45 +1,16 @@
 <!doctype html>
-{% load static %}
 <html lang="en-US">
-    <head>
-        <title>{% block title %}{% endblock %}</title>
-        <link rel="stylesheet" href="{% static 'css/main.css' %}" type="text/css">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap">
-        {% block styles %}{% endblock %}
-    </head>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+</head>
 
-    <nav>
-        <ul>
-            <li><a href="{% url 'home' %}">Home</a></li>
-            <li><a href="{% url 'user_management:profile-update' %}">Profile</a></li>
-            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li><a href="{% url 'commissions:commission-list' %}">Commissions</a></li>
-            <li><a href="{% url 'merchstore:items' %}">Merchstore</a></li>
-            <li><a href="{% url 'blog:blog-list' %}">Blog</a></li>
-            <li><a href="{% url 'wiki:articles' %}">Wiki</a></li>
-            {% block additional_nav %}{% endblock %}
-        </ul>
-    </nav>
-
-    {% block user_authentication %}
-        {% if request.user.is_authenticated %}
-            <h4> Hello, {{request.user.username}}!</h4>
-            <form action = "{% url 'logout' %}" method = "POST">
-                {% csrf_token %}
-                <button type = "submit">LOG OUT</button>
-            </form>
-        {% else %}
-            <a href ="{% url 'login' %}">Please login.</a>
-        {% endif %}
-    {% endblock %}
-
+<body>
     <h1>{% block page_heading %}{% endblock %}</h1>
-    <h2>{% block page_heading2 %}{% endblock %}</h2>
 
-    <body>
-        <div id="content">
-            {% block content %}{% endblock %}
-        </div>
-        {% block scripts %}{% endblock %}
-    </body>
+    <div>
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
 </html>
