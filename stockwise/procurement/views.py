@@ -51,6 +51,7 @@ def request_material(request, project_id):
                 last_updated=timezone.now(),
                 request_status='Waiting for Approval',
                 project=project,
+                requested_by=request.user,
             )
             purchase_request.save()
 
