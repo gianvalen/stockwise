@@ -1,10 +1,10 @@
 from django import forms
-from stock_management.models import Material
+from stock_management.models import InventoryMaterial
 
 class UpdateMaterialForm(forms.ModelForm):
     class Meta:
-        model = Material
-        fields = ['current_amount']
+        model = InventoryMaterial
+        fields = ['quantity']
         widgets = {
-            'current_amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
         }
