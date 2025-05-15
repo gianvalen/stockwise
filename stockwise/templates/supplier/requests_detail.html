@@ -5,23 +5,42 @@
 {% block page_heading %}Purchase Request Details{% endblock %}
 
 {% block content %}
-    <p><strong>Project:</strong> {{ purchase_request.project.project_name }}</p>
-    <p><strong>Request Date:</strong> {{ purchase_request.request_date }}</p>
-    <p><strong>Requested By:</strong> {{ purchase_request.requested_by.username }}</p>
+<div class="max-w-4xl mx-auto bg-surface/80 border border-primary rounded-xl p-6 shadow-md">
+  <p class="mb-6">
+    <a href="{% url 'supply:requests_list' %}" 
+       class="inline-block bg-primary text-surface font-semibold px-4 py-2 rounded hover:bg-yellow-600 transition min-w-[40px] text-center">
+      ←
+    </a>
+  </p>
 
-    <h3>Materials Requested</h3>
-    {% if request_details %}
-        <ul>
-            {% for detail in request_details %}
-                <li>
-                    {{ detail.material.material_name }} – {{ detail.quantity }} {{ detail.material.unit }} 
-                    | <a href="{% url 'supply:offer_material' purchase_request.pr_id detail.material.material_id %}">Offer</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No materials in this request.</p>
-    {% endif %}
+  <p class="mb-2">
+    <strong class="text-secondary">Project:</strong> {{ purchase_request.project.project_name }}
+  </p>
+  <p class="mb-2">
+    <strong class="text-secondary">Request Date:</strong> {{ purchase_request.request_date }}
+  </p>
+  <p class="mb-4">
+    <strong class="text-secondary">Requested By:</strong> {{ purchase_request.requested_by.username }}
+  </p>
 
-    <p><a href="{% url 'supply:requests_list' %}">Back to list</a></p>
+  <h3 class="text-xl font-semibold mb-4 text-secondary">Materials Requested:</h3>
+  
+  {% if request_details %}
+    <ul class="space-y-3">
+      {% for detail in request_details %}
+      <li class="flex justify-between items-center bg-surface/60 rounded px-4 py-2">
+        <span>
+          {{ detail.material.material_name }} – {{ detail.quantity }} {{ detail.material.unit }}
+        </span>
+        <a href="{% url 'supply:offer_material' purchase_request.pr_id detail.material.material_id %}" 
+           class="bg-primary text-surface font-semibold px-4 py-2 rounded hover:bg-yellow-600 transition text-center min-w-[80px]">
+          Offer
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted italic">No materials in this request.</p>
+  {% endif %}
+</div>
 {% endblock %}

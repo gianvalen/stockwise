@@ -3,28 +3,35 @@
 
 {% block title %}Project Detail{% endblock %}
 
-{% block additional_nav %}
-    <li><a href="{% url 'warehouse:home_warehouse' %}">Warehouse Home</a></li>
-    <li><a href="{% url 'warehouse:projects_list' %}">Projects List</a></li>
-{% endblock %}
-
-{% block page_heading %}Project: {{ project.project_name }}{% endblock %}
-
 {% block content %}
-    <h3>Location: {{ project.project_location }}</h3>
+<div class="max-w-4xl mx-auto bg-surface/80 border border-primary rounded-xl p-6 shadow-md">
 
-    <h4>Inventory Materials</h4>
-    <ul>
-        {% for im in materials_in_inventory %}
-          <li>
-            {{ im.material.material_name }} ({{ im.material.material_type }}) - 
-            {{ im.quantity }} {{ im.material.unit }} 
-            | <a href="{% url 'warehouse:update_material' project.project_id im.material.material_id %}">Update</a>
-        </li>
-        {% empty %}
-            <li>No materials found.</li>
-        {% endfor %}
-    </ul>
-    <br>
-    <a href="{% url 'warehouse:projects_list' %}">Back to Projects List</a>
+  <!-- Back button and heading aligned horizontally -->
+  <div class="flex items-center mb-6 space-x-4">
+    <a href="{% url 'warehouse:projects_list' %}" 
+       class="inline-block bg-primary text-surface font-semibold px-4 py-2 rounded hover:bg-yellow-600 transition min-w-[40px] text-center">
+      ←
+    </a>
+    <h1 class="text-xl font-bold text-primary">Project: {{ project.project_name }}</h1>
+  </div>
+
+  <h3 class="text-lg font-semibold mb-4 text-secondary">Location: {{ project.project_location }}</h3>
+
+  <h4 class="text-md font-semibold mb-3 text-secondary">Inventory Materials:</h4>
+  <ul class="list-disc list-inside space-y-3 text-secondary max-w-3xl">
+    {% for im in materials_in_inventory %}
+      <li class="flex justify-between items-center gap-4">
+        <span class="truncate max-w-[75%]">
+          {{ im.material.material_name }} ({{ im.material.material_type }}) — {{ im.quantity }} {{ im.material.unit }}
+        </span>
+        <a href="{% url 'warehouse:update_material' project.project_id im.material.material_id %}" 
+           class="bg-primary text-surface font-semibold px-3 py-1 rounded hover:bg-yellow-600 transition text-sm whitespace-nowrap">
+          Update
+        </a>
+      </li>
+    {% empty %}
+      <li class="text-muted">No materials found.</li>
+    {% endfor %}
+  </ul>
+</div>
 {% endblock %}

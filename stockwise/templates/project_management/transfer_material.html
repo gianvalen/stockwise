@@ -1,15 +1,69 @@
 {% extends 'base.html' %}
 
+{% block title %}Transfer Material{% endblock %}
+
 {% block content %}
-  <h1>Transfer Material</h1>
+  <div class="max-w-6xl mx-auto bg-surface/80 border border-primary rounded-xl p-6 shadow-md relative">
+    
+    <!-- Back Button at top left -->
+    <a href="{% url 'project_management:transfer_materials' %}" 
+       class="absolute top-4 left-4 px-3 py-1 rounded bg-primary text-surface font-semibold hover:bg-yellow-600 transition">
+      &larr; Back
+    </a>
 
-  <p><strong>Project:</strong> {{ project.project_name }}</p>
-  <p><strong>Material:</strong> {{ material.material_name }} ({{ material.unit }})</p>
-  <p><strong>Current Quantity:</strong> {{ current_qty }}</p>
+    <h1 class="text-3xl font-bold mb-6 text-primary text-center">Transfer Material</h1>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Transfer</button>
-  </form>
+    <p class="mb-2"><strong>Project:</strong> {{ source_project.project_name }}</p>
+    <p class="mb-2"><strong>Material:</strong> {{ material.material_name }} ({{ material.unit }})</p>
+    <p class="mb-6"><strong>Current Quantity:</strong> {{ current_qty }}</p>
+
+    <form method="post" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {% csrf_token %}
+
+      <!-- Quantity Field -->
+      <div>
+        <label for="id_quantity" class="block text-secondary font-semibold mb-1">Quantity</label>
+        <input
+          type="number"
+          name="quantity"
+          id="id_quantity"
+          value="{{ form.quantity.value|default_if_none:'' }}"
+          class="w-full px-3 py-2 rounded border border-muted bg-surface text-secondary placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary"
+          min="1"
+          step="1"
+          required
+        />
+        {% if form.quantity.errors %}
+          <p class="text-yellow-400 text-sm mt-1">{{ form.quantity.errors|striptags }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Destination Project Field -->
+      <div>
+        <label for="id_destination_project" class="block text-secondary font-semibold mb-1">Destination Project</label>
+        <select
+          name="destination_project"
+          id="id_destination_project"
+          class="w-full px-3 py-2 rounded border border-muted bg-surface text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+          required
+        >
+          <option value="" disabled {% if not form.destination_project.value %}selected{% endif %}>Select a project</option>
+          {% for val, text in form.destination_project.field.choices %}
+            <option value="{{ val }}" {% if val == form.destination_project.value %}selected{% endif %}>{{ text }}</option>
+          {% endfor %}
+        </select>
+        {% if form.destination_project.errors %}
+          <p class="text-yellow-400 text-sm mt-1">{{ form.destination_project.errors|striptags }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Submit Button -->
+      <div class="flex items-end">
+        <button type="submit" 
+                class="w-full bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-yellow-600 transition">
+          Transfer
+        </button>
+      </div>
+    </form>
+  </div>
 {% endblock %}

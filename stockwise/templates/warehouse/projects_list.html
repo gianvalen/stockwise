@@ -7,20 +7,40 @@
     <li><a href="{% url 'warehouse:home_warehouse' %}">Warehouse Home</a></li>
 {% endblock %}
 
-{% block page_heading %}All Projects{% endblock %}
-
 {% block content %}
-    <ul>
+<div class="max-w-7xl mx-auto">
+  <!-- Big card wrapping everything -->
+  <div class="bg-surface/80 border border-primary rounded-xl p-6 shadow-md">
+    <!-- Header inside big card -->
+    <h2 class="text-primary font-extrabold text-3xl mb-6">All Projects</h2>
+
+    {% if projects %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for project in projects %}
-            <li>
-                {{ project.project_name }} - {{ project.project_location }}
-                <a href="{% url 'warehouse:project_detail' project.project_id %}">
-                    <button>View Inventory</button>
-                </a>
-            </li>
-        {% empty %}
-            <li>No projects available.</li>
+          <div class="bg-surface/90 border border-primary rounded-xl p-4 shadow flex flex-col justify-between">
+            <div>
+              <h3 class="font-semibold text-secondary text-xl mb-1 truncate">{{ project.project_name }}</h3>
+              <p class="text-sm text-muted mb-4">{{ project.project_location }}</p>
+            </div>
+            <a href="{% url 'warehouse:project_detail' project.project_id %}">
+              <button class="w-full bg-primary text-surface font-semibold px-4 py-2 rounded hover:bg-yellow-600 transition">
+                View Inventory
+              </button>
+            </a>
+          </div>
         {% endfor %}
-    </ul>
-    <a href="{% url 'warehouse:home_warehouse' %}">Back to Home</a>
+      </div>
+    {% else %}
+      <p class="text-muted text-center mt-10">No projects available.</p>
+    {% endif %}
+  </div>
+
+  <!-- Back button outside big card -->
+  <div class="mt-10 text-center">
+    <a href="{% url 'warehouse:home_warehouse' %}" 
+       class="inline-block bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-yellow-600 transition">
+      ← Back to Home
+    </a>
+  </div>
+</div>
 {% endblock %}

@@ -9,6 +9,7 @@ def home_manager(request):
 
 def pending_requests(request):
     status_filter = request.GET.get('status')  # Get status filter from URL query
+    project_filter = request.GET.get('project')  # Get project filter from URL query
 
     if request.method == 'POST':
         pr_id = request.POST.get('pr_id')
@@ -22,21 +23,34 @@ def pending_requests(request):
             purchase_request.request_status = 'Not Approved'
 
         purchase_request.save()
-        return redirect(f'{request.path}?status={status_filter or ""}')
 
-    # Filter purchase requests by status if provided
-    purchase_requests = PurchaseRequest.objects.all().prefetch_related('requestdetail_set')
+        # Preserve filters on redirect
+        query_params = []
+        if status_filter:
+            query_params.append(f'status={status_filter}')
+        if project_filter:
+            query_params.append(f'project={project_filter}')
+        query_string = '&'.join(query_params)
+        return redirect(f'{request.path}?{query_string}' if query_string else request.path)
+
+    # Filter purchase requests by status and project if provided
+    purchase_requests = PurchaseRequest.objects.all().prefetch_related('requestdetail_set', 'project')
     if status_filter:
         purchase_requests = purchase_requests.filter(request_status=status_filter)
+    if project_filter:
+        purchase_requests = purchase_requests.filter(project__project_id=project_filter)
+
+    all_projects = Project.objects.all().order_by('project_name')  # get all projects, ordered by name
 
     context = {
         'purchase_requests': purchase_requests,
         'status_filter': status_filter,
+        'project_filter': project_filter,
+        'all_projects': all_projects,  # pass this to template
     }
     return render(request, 'project_management/pending_requests.html', context)
 
 def transfer_materials_home(request):
-    # Get all projects with their materials via InventoryMaterial
     projects = Project.objects.all()
 
     project_materials = []
@@ -56,13 +70,11 @@ def transfer_materials_home(request):
         'project_materials': project_materials,
     })
 
-
 def transfer_material(request, project_id, material_id):
     source_project = get_object_or_404(Project, project_id=project_id)
     material = get_object_or_404(Material, material_id=material_id)
     source_inventory = source_project.projectinventory.inventory
 
-    # Get source InventoryMaterial
     try:
         source_im = InventoryMaterial.objects.get(inventory=source_inventory, material=material)
     except InventoryMaterial.DoesNotExist:
@@ -80,7 +92,6 @@ def transfer_material(request, project_id, material_id):
                 messages.error(request, "Not enough quantity in source inventory.")
                 return redirect('project_management:transfer_material_form', project_id=project_id, material_id=material_id)
 
-            # Get or create destination InventoryMaterial
             destination_im, created = InventoryMaterial.objects.get_or_create(
                 inventory=destination_inventory,
                 material=material,
@@ -89,11 +100,9 @@ def transfer_material(request, project_id, material_id):
 
             try:
                 with transaction.atomic():
-                    # Deduct from source
                     source_im.quantity -= quantity
                     source_im.save()
 
-                    # Add to destination
                     destination_im.quantity += quantity
                     destination_im.save()
 
@@ -111,13 +120,11 @@ def transfer_material(request, project_id, material_id):
         'current_qty': source_im.quantity,
     })
 
-
 def generate_new_im_id():
-    # get all existing im_id's, assume they're like 'IM001', 'IM002' etc.
     last_im = InventoryMaterial.objects.order_by('-im_id').first()
     if last_im:
-        last_id_num = int(last_im.im_id.strip('IM'))  # strip prefix
+        last_id_num = int(last_im.im_id.strip('IM'))
         new_id_num = last_id_num + 1
     else:
         new_id_num = 1
-    return f"IM{new_id_num:03d}"  # e.g. IM001, IM002
+    return f"IM{new_id_num:03d}"

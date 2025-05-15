@@ -3,13 +3,50 @@
 {% block title %}Offer Material{% endblock %}
 
 {% block content %}
-<h2>Offer to Supply: {{ material.material_name }} ({{ material.unit }})</h2>
+<div class="max-w-xl mx-auto bg-surface/80 border border-primary rounded-xl p-6 shadow-md">
 
-<form method="post">
+  <!-- Back Button -->
+  <div class="mb-6">
+    <a href="{% url 'supply:requests_detail' purchase_request.pr_id %}"
+       class="inline-block bg-primary text-surface font-semibold px-4 py-2 rounded hover:bg-yellow-600 transition">
+      ← 
+    </a>
+  </div>
+
+  <h2 class="text-2xl font-bold mb-6 text-primary">
+    Offer to Supply: {{ material.material_name }} - {{ requested_quantity }} ({{ material.unit }})
+ </h2>
+
+  <form method="post" class="space-y-5">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Submit Offer</button>
-</form>
 
-<a href="{% url 'supply:requests_detail' purchase_request.pr_id %}">Back to Request Details</a>
+    {% for field in form %}
+      <div>
+        <label for="{{ field.id_for_label }}" class="block text-secondary font-semibold mb-1">
+          {{ field.label }}
+        </label>
+        {{ field }}
+        {% if field.errors %}
+          <p class="text-yellow-400 text-sm mt-1">{{ field.errors|striptags }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <button type="submit"
+            class="w-full bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition">
+      Submit Offer
+    </button>
+  </form>
+</div>
+
+<style>
+  input, select, textarea {
+    background-color: rgba(255, 255, 255, 0.05); /* surface-like */
+    color: #fff;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    width: 100%;
+  }
+</style>
 {% endblock %}

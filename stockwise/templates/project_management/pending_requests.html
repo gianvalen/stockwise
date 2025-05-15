@@ -1,49 +1,89 @@
 {% extends 'base.html' %}
+
 {% block title %}Purchase Requests{% endblock %}
 
 {% block content %}
-<h1>Purchase Requests</h1>
+<h1 class="text-3xl font-bold mb-6 text-primary">Purchase Requests</h1>
 
-<!-- Filter Buttons -->
-<div style="margin-bottom: 20px;">
-    <a href="?status=Waiting for Approval">Waiting for Approval</a> |
-    <a href="?status=Approved">Approved</a> |
-    <a href="?status=Not Approved">Not Approved</a> |
-    <a href="{% url 'project_management:pending_requests' %}">Show All</a>
-</div>
+<div class="border border-gray-600 rounded-xl bg-surface/50 p-6 space-y-6 max-w-7xl mx-auto">
 
-{% for pr in purchase_requests %}
-    <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
-        <h3>Purchase Request ID: {{ pr.pr_id }}</h3>
-        <p>Status: {{ pr.request_status }}</p>
-        <p>Project: {{ pr.project.project_name }}</p>
+  <!-- Filter Controls -->
+  <form method="get" class="flex flex-wrap gap-4 items-center justify-between mb-6">
 
-        <h4>Request Details:</h4>
-        <ul>
-            {% for detail in pr.requestdetail_set.all %}
-                <li>Material: {{ detail.material.material_name }} | Quantity: {{ detail.quantity }}</li>
-            {% empty %}
-                <li>No request details.</li>
-            {% endfor %}
-        </ul>
-
-        {% if pr.request_status == 'Waiting for Approval' %}
-            <form method="post" style="display: inline;">
-                {% csrf_token %}
-                <input type="hidden" name="pr_id" value="{{ pr.pr_id }}">
-                <input type="hidden" name="action" value="approve">
-                <button type="submit">Approve</button>
-            </form>
-
-            <form method="post" style="display: inline;">
-                {% csrf_token %}
-                <input type="hidden" name="pr_id" value="{{ pr.pr_id }}">
-                <input type="hidden" name="action" value="reject">
-                <button type="submit">Reject</button>
-            </form>
-        {% endif %}
+    <!-- Status Dropdown -->
+    <div>
+      <label for="status" class="text-secondary font-medium mr-2">Filter by Status:</label>
+      <select name="status" id="status"
+              class="px-3 py-2 rounded border border-muted bg-surface text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+              onchange="this.form.submit()">
+        <option value="" {% if not status_filter %}selected{% endif %}>All Statuses</option>
+        <option value="Waiting for Approval" {% if status_filter == 'Waiting for Approval' %}selected{% endif %}>Waiting for Approval</option>
+        <option value="Approved" {% if status_filter == 'Approved' %}selected{% endif %}>Approved</option>
+        <option value="Not Approved" {% if status_filter == 'Not Approved' %}selected{% endif %}>Not Approved</option>
+      </select>
     </div>
-{% empty %}
-    <p>No Purchase Requests found for this filter.</p>
-{% endfor %}
+
+    <!-- Project Dropdown -->
+    <div>
+      <label for="project" class="text-secondary font-medium mr-2">Filter by Project:</label>
+        <select name="project" id="project"
+                class="min-w-[200px] px-3 py-2 rounded border border-muted bg-surface text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                onchange="this.form.submit()">
+          <option value="" {% if not project_filter %}selected{% endif %}>All Projects</option>
+          {% for project in all_projects %}
+            <option value="{{ project.project_id }}" {% if project_filter == project.project_id|stringformat:"s" %}selected{% endif %}>
+              {{ project.project_name }}
+            </option>
+          {% endfor %}
+        </select>
+    </div>
+
+  </form>
+
+  <!-- Grid View -->
+  {% if purchase_requests %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for pr in purchase_requests %}
+        <div class="border border-primary rounded-lg p-4 bg-surface/80 shadow-sm">
+          <h3 class="text-xl font-semibold mb-2 text-secondary">PR ID: {{ pr.pr_id }}</h3>
+          <p class="mb-1"><strong>Status:</strong> {{ pr.request_status }}</p>
+          <p class="mb-3"><strong>Project:</strong> {{ pr.project.project_name }}</p>
+
+          <h4 class="font-semibold mb-2 text-secondary">Request Details:</h4>
+          <ul class="list-disc list-inside text-sm mb-4">
+            {% for detail in pr.requestdetail_set.all %}
+              <li>{{ detail.material.material_name }} — Qty: {{ detail.quantity }}</li>
+            {% empty %}
+              <li>No request details.</li>
+            {% endfor %}
+          </ul>
+
+          {% if pr.request_status == 'Waiting for Approval' %}
+            <form method="post" class="inline-block mr-2">
+              {% csrf_token %}
+              <input type="hidden" name="pr_id" value="{{ pr.pr_id }}">
+              <input type="hidden" name="action" value="approve">
+              <button type="submit"
+                      class="bg-primary text-surface font-semibold px-4 py-2 rounded hover:bg-yellow-600 transition">
+                Approve
+              </button>
+            </form>
+
+            <form method="post" class="inline-block">
+              {% csrf_token %}
+              <input type="hidden" name="pr_id" value="{{ pr.pr_id }}">
+              <input type="hidden" name="action" value="reject">
+              <button type="submit"
+                      class="bg-gray-700 text-secondary font-semibold px-4 py-2 rounded hover:bg-gray-600 transition">
+                Reject
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-center text-secondary italic">No Purchase Requests found for this filter.</p>
+  {% endif %}
+</div>
 {% endblock %}

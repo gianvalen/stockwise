@@ -1,12 +1,49 @@
 {% extends "base.html" %}
 {% block title %}Update Material{% endblock %}
-{% block page_heading %}Update Amount of {{ material.material_name }}{% endblock %}
+
 {% block content %}
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Update</button>
-</form>
-<br>
-<a href="{% url 'warehouse:projects_list' %}">Back to Projects</a>
+<div class="max-w-md mx-auto bg-surface/80 rounded-xl shadow-lg p-6 sm:p-8 border border-primary relative">
+
+  <!-- Back button top-left -->
+  <a href="{% url 'warehouse:projects_list' %}" 
+     class="absolute top-4 left-4 bg-primary text-surface font-semibold px-3 py-1 rounded hover:bg-muted transition inline-block">
+    &larr;
+  </a>
+
+  <!-- Heading and Unit in one block with some top padding to separate from back button -->
+  <div class="mb-4 pt-8">
+    <h2 class="text-2xl font-bold text-primary leading-tight">{{ material.material_name }}</h2>
+    <p class="text-muted text-sm -mt-1">Unit: {{ material.unit }}</p>
+  </div>
+
+  <!-- Form -->
+  <form method="POST" class="space-y-4">
+      {% csrf_token %}
+
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="block mb-1 font-semibold text-secondary">{{ field.label }}</label>
+          {% if field.field.widget.input_type == "text" or field.field.widget.input_type == "number" %}
+            <input 
+              type="{{ field.field.widget.input_type }}" 
+              name="{{ field.html_name }}" 
+              id="{{ field.id_for_label }}" 
+              value="{{ field.value|default_if_none:'' }}" 
+              class="w-full rounded-md bg-surface border border-muted text-secondary px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              {% if field.field.required %} required {% endif %}
+            >
+          {% else %}
+            {{ field }}
+          {% endif %}
+          {% if field.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ field.errors }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <button type="submit" class="mt-4 bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full">
+        Update
+      </button>
+  </form>
+</div>
 {% endblock %}

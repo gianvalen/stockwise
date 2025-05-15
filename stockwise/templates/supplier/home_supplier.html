@@ -3,14 +3,25 @@
 
 {% block title %}Supplier Home{% endblock %}
 
-{% block additional_nav %}
-    <li><a href="{% url 'supply:home_supplier' %}">Supplier Home</a></li>
-{% endblock %}
-
-{% block page_heading %}Welcome to Supplier Home{% endblock %}
-
 {% block content %}
-    <a href="{% url 'supply:requests_list' %}">
-        <button>View Requests</button>
-    </a>
+<!-- Welcome Section -->
+<section class="bg-surface/80 rounded-xl shadow-lg p-6 sm:p-10 border border-primary max-w-3xl mx-auto mb-10">
+  <h2 class="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6 text-primary leading-tight">
+  Welcome to StockWise, {{ request.user.first_name }}!
+
+  </h2>
+  <p class="text-secondary text-base sm:text-lg leading-relaxed">
+    Manage incoming material requests, fulfill orders, and track deliveries in real time.
+    StockWise enables smooth coordination between your team and procurement teams for a reliable supply chain.
+  </p>
+</section>
+
+<!-- Navigation Buttons -->
+<div class="text-center">
+  <a href="{% url 'supply:requests_list' %}">
+    <button class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full sm:w-auto">
+      View Purchase Requests
+    </button>
+  </a>
+</div>
 {% endblock %}
