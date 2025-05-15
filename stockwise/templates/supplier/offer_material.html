@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Offer Material{% endblock %}
+
+{% block content %}
+<h2>Offer to Supply: {{ material.material_name }} ({{ material.unit }})</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit Offer</button>
+</form>
+
+<a href="{% url 'supply:requests_detail' purchase_request.pr_id %}">Back to Request Details</a>
+{% endblock %}
