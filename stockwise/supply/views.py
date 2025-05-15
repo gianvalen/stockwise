@@ -54,6 +54,7 @@ def offer_material(request, pr_id, material_id):
         'form': form,
         'material': request_detail.material,
         'purchase_request': purchase_request,
+        'requested_quantity': request_detail.quantity,
     }
 
     return render(request, 'offer_material.html', context)
