@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from stock_management.models import PurchaseRequest, RequestDetail, ProjectInventory, InventoryMaterial, Project, Material
+from stock_management.models import PurchaseRequest, RequestDetail, ProjectInventory, InventoryMaterial, Project, Material, Offer
 from .forms import MaterialTransferForm
 from django.db import transaction
 

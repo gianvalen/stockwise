@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from user_management.decorators import user_type_required
-from stock_management.models import Project, ProjectInventory, InventoryMaterial, PurchaseRequest, RequestDetail, Material
+from stock_management.models import Project, ProjectInventory, InventoryMaterial, PurchaseRequest, RequestDetail, Material, Offer
 from django.utils import timezone
 from .forms import RequestMaterialForm
 
@@ -90,3 +91,37 @@ def request_material(request, project_id):
         'project': project,
         'grouped_choices': grouped_choices,  # Pass here for template use
     })
+
+def pending_offers(request):
+    status_filter = request.GET.get('status')  # Get status filter from query params
+
+    # Handle Approve/Reject actions
+    if request.method == 'POST':
+        offer_id = request.POST.get('offer_id')
+        action = request.POST.get('action')  # 'accept' or 'reject'
+
+        offer = get_object_or_404(Offer, offer_id=offer_id)
+
+        if action == 'accept':
+            offer.offer_status = 'Accepted'
+            messages.success(request, f"Offer {offer_id} has been accepted.")
+        elif action == 'reject':
+            offer.offer_status = 'Rejected'
+            messages.success(request, f"Offer {offer_id} has been rejected.")
+
+        offer.save()
+
+        # Preserve filters on redirect
+        query_params = f"?status={status_filter}" if status_filter else ""
+        return redirect(f"{request.path}{query_params}")
+
+    # Filter offers by status if provided
+    offers = Offer.objects.all()
+    if status_filter:
+        offers = offers.filter(offer_status=status_filter)
+
+    context = {
+        'offers': offers,
+        'status_filter': status_filter,
+    }
+    return render(request, 'pending_offers_proc.html', context)
