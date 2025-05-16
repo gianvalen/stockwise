@@ -8,12 +8,12 @@ def home_manager(request):
     return render(request, 'project_management/home_manager.html')
 
 def pending_requests(request):
-    status_filter = request.GET.get('status')  # Get status filter from URL query
-    project_filter = request.GET.get('project')  # Get project filter from URL query
+    status_filter = request.GET.get('status')
+    project_filter = request.GET.get('project')
 
     if request.method == 'POST':
         pr_id = request.POST.get('pr_id')
-        action = request.POST.get('action')  # 'approve' or 'reject'
+        action = request.POST.get('action')
 
         purchase_request = get_object_or_404(PurchaseRequest, pr_id=pr_id)
 
@@ -24,7 +24,6 @@ def pending_requests(request):
 
         purchase_request.save()
 
-        # Preserve filters on redirect
         query_params = []
         if status_filter:
             query_params.append(f'status={status_filter}')
@@ -33,20 +32,19 @@ def pending_requests(request):
         query_string = '&'.join(query_params)
         return redirect(f'{request.path}?{query_string}' if query_string else request.path)
 
-    # Filter purchase requests by status and project if provided
     purchase_requests = PurchaseRequest.objects.all().prefetch_related('requestdetail_set', 'project')
     if status_filter:
         purchase_requests = purchase_requests.filter(request_status=status_filter)
     if project_filter:
         purchase_requests = purchase_requests.filter(project__project_id=project_filter)
 
-    all_projects = Project.objects.all().order_by('project_name')  # get all projects, ordered by name
+    all_projects = Project.objects.all().order_by('project_name')
 
     context = {
         'purchase_requests': purchase_requests,
         'status_filter': status_filter,
         'project_filter': project_filter,
-        'all_projects': all_projects,  # pass this to template
+        'all_projects': all_projects,
     }
     return render(request, 'project_management/pending_requests.html', context)
 
@@ -130,7 +128,8 @@ def generate_new_im_id():
     return f"IM{new_id_num:03d}"
 
 def pending_offers_proj(request):
-    status_filter = request.GET.get('status', 'Accepted')  # Default to Accepted
+    status_filter = request.GET.get('status')
+    project_filter = request.GET.get('project')
 
     if request.method == 'POST':
         offer_id = request.POST.get('offer_id')
@@ -140,21 +139,33 @@ def pending_offers_proj(request):
 
         if action == 'approve':
             offer.offer_status_proj = 'Accepted'
-            messages.success(request, f"Offer {offer_id} has been approved.")
         elif action == 'reject':
             offer.offer_status_proj = 'Rejected'
-            messages.warning(request, f"Offer {offer_id} has been rejected.")
 
         offer.save()
-        return redirect('project_management:pending_offers_proj')
 
-    offers = Offer.objects.all()
+        query_params = []
+        if status_filter:
+            query_params.append(f'status={status_filter}')
+        if project_filter:
+            query_params.append(f'project={project_filter}')
+        query_string = '&'.join(query_params)
+        return redirect(f'{request.path}?{query_string}' if query_string else request.path)
+
+    offers = Offer.objects.all().select_related('offerrequestdetail__request_detail__pr__project')
+
     if status_filter:
-        offers = offers.filter(offer_status=status_filter)
+        offers = offers.filter(offer_status_proj=status_filter)
+    if project_filter:
+        offers = offers.filter(offerrequestdetail__request_detail__pr__project__project_id=project_filter)
+
+    all_projects = Project.objects.all().order_by('project_name')
 
     context = {
         'offers': offers,
         'status_filter': status_filter,
+        'project_filter': project_filter,
+        'all_projects': all_projects,
     }
 
     return render(request, 'pending_offers_proj.html', context)
