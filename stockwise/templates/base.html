@@ -2,185 +2,298 @@
 {% load static %}
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>{% block title %}StockWise{% endblock %}</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}StockWise{% endblock %}</title>
 
-<!-- Google Fonts: Manrope -->
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+  <!-- Google Fonts: Manrope -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
     tailwind.config = {
-    theme: {
+      theme: {
         extend: {
-        fontFamily: {
+          fontFamily: {
             sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        },
-        colors: {
+          },
+          colors: {
             surface: '#2E2E2E',
             primary: '#D9B650',
             secondary: '#FFFFFF',
             muted: '#CFC497',
             overlay: 'rgba(46, 46, 46, 0.75)',
+          }
         }
-        }
+      }
     }
+  </script>
+  <style>
+
+    /* Responsive table wrapper */
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+      width: 100%;
+      border-radius: 0.375rem; /* rounded corners */
+      margin-bottom: 1.5rem;
     }
-</script>
-{% block extra_head %}{% endblock %}
+    .table-responsive table {
+      width: 100%;
+      min-width: 600px; /* minimum width before scrolling */
+      border-collapse: collapse;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
 </head>
 <body class="relative font-sans text-secondary min-h-screen flex flex-col bg-surface">
 
-<!-- Background -->
-<div class="absolute inset-0 bg-[url('/static/images/background.jpg')] bg-cover bg-center z-0"></div>
-<div class="absolute inset-0 bg-surface/75 z-0"></div>
+  <!-- Background -->
+  <div class="absolute inset-0 bg-[url('/static/images/background.jpg')] bg-cover bg-center z-0"></div>
+  <div class="absolute inset-0 bg-surface/75 z-0"></div>
 
-<!-- Foreground Content -->
-<div class="relative z-10 flex-grow flex flex-col">
+  <!-- Foreground Content -->
+  <div class="relative z-10 flex-grow flex flex-col">
 
     <!-- Navbar -->
     {% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}
     <header class="bg-surface/90 shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 flex justify-between items-center flex-wrap">
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wide text-primary mb-2 sm:mb-0">🏗️ StockWise</h1>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 flex justify-between items-center">
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wide text-primary">🏗️ StockWise</h1>
+        
+        <!-- Toggle Button (Mobile) -->
+        <button id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu" 
+                class="sm:hidden text-primary focus:outline-none text-2xl">☰</button>
 
-        {% if request.user.is_authenticated %}
+        <!-- Desktop Nav aligned right -->
+        <nav class="hidden sm:flex flex-row-reverse gap-6 text-sm font-semibold text-secondary" aria-label="Primary navigation">
+          {% if request.user.is_authenticated %}
             {% if request.user.profile.user_type == 'procurement' %}
-                <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
-                    <a href="{% url 'procurement:home_procurement' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_procurement' %}text-primary font-bold{% endif %}">
-                        Home
-                    </a>
-                    <a href="{% url 'procurement:projects_list' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
-                        Projects
-                    </a>
-                    <a href="{% url 'procurement:my_requests' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'my_requests' %}text-primary font-bold{% endif %}">
-                        My Requests
-                    </a>
-                    <a href="{% url 'project_management:purchase_orders_list' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'purchase_orders_list' %}text-primary font-bold{% endif %}">
-                        Order Tracker
-                    </a>
-                    <a href="{% url 'procurement:pending_offers' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'pending_offers' %}text-primary font-bold{% endif %}">
-                        Pending Offers
-                    </a>
-                    <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
-                            Logout
-                        </button>
-                    </form>
-                </nav>
+              <a href="{% url 'user_management:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 cursor-pointer">
+                Logout
+              </a>
+              <form id="logout-form" action="{% url 'user_management:logout' %}" method="POST" class="hidden">
+                {% csrf_token %}
+              </form>
+
+              <a href="{% url 'project_management:purchase_orders_list' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'purchase_orders_list' %}text-primary font-bold{% endif %}">
+                Order Tracker
+              </a>
+
+              <a href="{% url 'procurement:pending_offers' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'pending_offers' %}text-primary font-bold{% endif %}">
+                Offers
+              </a>
+              
+              <a href="{% url 'procurement:my_requests' %}"
+                   class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'my_requests' %}text-primary font-bold{% endif %}">
+                My Requests
+              </a>
+              
+              <a href="{% url 'procurement:projects_list' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                Projects
+              </a>
+              <a href="{% url 'procurement:home_procurement' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'home_procurement' %}text-primary font-bold{% endif %}">
+                Home
+              </a>
 
             {% elif request.user.profile.user_type == 'supplier' %}
-                <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
-                    <a href="{% url 'supply:home_supplier' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_supplier' %}text-primary font-bold{% endif %}">
-                        Home
-                    </a>
-                    <a href="{% url 'supply:my_offers' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'my_offers' %}text-primary font-bold{% endif %}">
-                        My Offers
-                    </a>
-                    <a href="{% url 'supply:purchase_order_tracker' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'purchase_order_tracker' %}text-primary font-bold{% endif %}">
-                        Delivery Tracker
-                    </a>
-                    <a href="{% url 'supply:requests_list' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'requests_list' %}text-primary font-bold{% endif %}">
-                        Purchase Requests
-                    </a>
-                    <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
-                        Logout
-                        </button>
-                    </form>
-                </nav>
+              <form id="logout-form" action="{% url 'user_management:logout' %}" method="POST" class="hidden">
+                {% csrf_token %}
+              </form>
+              <a href="{% url 'user_management:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 cursor-pointer">
+                Logout
+              </a>
+
+            <a href="{% url 'supply:purchase_order_tracker' %}"
+                class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'purchase_order_tracker' %}text-primary font-bold{% endif %}">
+                Delivery Tracker
+            </a>
+
+            <a href="{% url 'supply:my_offers' %}"
+                class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'my_offers' %}text-primary font-bold{% endif %}">
+                My Offers
+
+              <a href="{% url 'supply:requests_list' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'requests_list' %}text-primary font-bold{% endif %}">
+                Purchase Requests
+              </a>
+            </a>
+              <a href="{% url 'supply:home_supplier' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'home_supplier' %}text-primary font-bold{% endif %}">
+                Home
+              </a>
 
             {% elif request.user.profile.user_type == 'manager' %}
-                <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
-                    <a href="{% url 'project_management:home_manager' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_pm' %}text-primary font-bold{% endif %}">
-                        Home
-                    </a>
-                    <a href="{% url 'procurement:projects_list' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
-                        Projects
-                    </a>
-                    <a href="{% url 'procurement:my_requests' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
-                        My Requests
-                    </a>
-                    <a href="{% url 'project_management:pending_requests' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'pending_requests' %}text-primary font-bold{% endif %}">
-                        Pending Requests
-                    </a>
+              <form id="logout-form" action="{% url 'user_management:logout' %}" method="POST" class="hidden">
+                {% csrf_token %}
+              </form>
+              <a href="{% url 'user_management:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 cursor-pointer">
+                Logout
+              </a>
 
-                    <!-- Add this Pending Offers link -->
-                    <a href="{% url 'project_management:pending_offers_proj' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'pending_offers_proj' %}text-primary font-bold{% endif %}">
-                        Pending Offers
-                    </a>
-                    <a href="{% url 'project_management:purchase_orders_list' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
-                        Order Tracker
-                    </a>
-                    <a href="{% url 'project_management:transfer_materials' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'transfer_materials' %}text-primary font-bold{% endif %}">
-                        Transfer Materials
-                    </a>
-                    <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
-                        Logout
-                        </button>
-                    </form>
-                </nav>
+              <a href="{% url 'project_management:transfer_materials' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'transfer_materials' %}text-primary font-bold{% endif %}">
+                Transfer Materials
+              </a>
+              <a href="{% url 'project_management:purchase_orders_list' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'purchase_orders_list' %}text-primary font-bold{% endif %}">
+                Order Tracker
+              </a>
+              <a href="{% url 'project_management:pending_offers_proj' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'pending_offers_proj' %}text-primary font-bold{% endif %}">
+                Pending Offers
+              </a>
+             <a href="{% url 'project_management:pending_requests'%}"
+                class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'pending_requests' %}text-primary font-bold{% endif %}">
+                Pending Requests
+            </a>
+              <a href="{% url 'procurement:projects_list' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                Projects
+              </a>
+              <a href="{% url 'project_management:home_manager' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'home_manager' %}text-primary font-bold{% endif %}">
+                Home
+              </a>
 
             {% elif request.user.profile.user_type == 'warehouse' %}
-                <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
-                    <a href="{% url 'warehouse:home_warehouse' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_warehouse' %}text-primary font-bold{% endif %}">
-                        Home
-                    </a>
+              <form id="logout-form" action="{% url 'user_management:logout' %}" method="POST" class="hidden">
+                {% csrf_token %}
+              </form>
+              <a href="{% url 'user_management:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 cursor-pointer">
+                Logout
+              </a>
 
-                    <a href="{% url 'warehouse:projects_list' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
-                        Projects
-                    </a>
-                    <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
-                        Logout
-                        </button>
-                    </form>
-                </nav>
+              <a href="{% url 'warehouse:projects_list' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                Projects
+              </a>
+              <a href="{% url 'warehouse:home_warehouse' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'home_warehouse' %}text-primary font-bold{% endif %}">
+                Home
+              </a>
             {% endif %}
-        {% endif %}
-    </div>
+          {% else %}
+            <a href="{% url 'user_management:login' %}" class="text-primary font-bold hover:underline">Login</a>
+          {% endif %}
+        </nav>
+      </div>
+
+<!-- Mobile Sidebar -->
+<nav id="mobile-menu" class="fixed inset-y-0 right-0 w-72 bg-surface shadow-lg p-6 overflow-y-auto transform translate-x-full transition-transform duration-300 ease-in-out sm:hidden z-20" aria-label="Mobile menu" tabindex="-1" aria-hidden="true">
+  <button id="menu-close" aria-label="Close menu" class="mb-8 text-primary text-3xl hover:text-primary/70 focus:outline-none">×</button>
+  <div class="flex flex-col text-lg font-semibold text-secondary">
+    {% if request.user.is_authenticated %}
+      {% if request.user.profile.user_type == 'procurement' %}
+        <a href="{% url 'procurement:home_procurement' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'home_procurement' %}text-primary font-bold{% endif %}">Home</a>
+        <a href="{% url 'procurement:projects_list' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">Projects</a>
+        <a href="{% url 'procurement:my_requests' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'my_requests' %}text-primary font-bold{% endif %}">My Requests</a>
+        <a href="{% url 'procurement:pending_offers' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'pending_offers' %}text-primary font-bold{% endif %}">Offers</a>
+        <a href="{% url 'project_management:purchase_orders_list' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'purchase_orders_list' %}text-primary font-bold{% endif %}">Order Tracker</a>
+        <a href="{% url 'user_management:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 cursor-pointer">Logout</a>
+        <form id="logout-form-mobile" action="{% url 'user_management:logout' %}" method="POST" class="hidden">{% csrf_token %}</form>
+
+      {% elif request.user.profile.user_type == 'supplier' %}
+        <a href="{% url 'supply:home_supplier' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'home_supplier' %}text-primary font-bold{% endif %}">Home</a>
+        <a href="{% url 'supply:requests_list' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'requests_list' %}text-primary font-bold{% endif %}">Purchase Requests</a>
+        <a href="{% url 'supply:my_offers' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'my_offers' %}text-primary font-bold{% endif %}">My Offers</a>
+        <a href="{% url 'supply:purchase_order_tracker' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'purchase_order_tracker' %}text-primary font-bold{% endif %}">Delivery Tracker</a>
+        <a href="{% url 'user_management:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 cursor-pointer">Logout</a>
+        <form id="logout-form-mobile" action="{% url 'user_management:logout' %}" method="POST" class="hidden">{% csrf_token %}</form>
+
+      {% elif request.user.profile.user_type == 'manager' %}
+        <a href="{% url 'project_management:home_manager' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'home_manager' %}text-primary font-bold{% endif %}">Home</a>
+        <a href="{% url 'procurement:projects_list' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">Projects</a>
+        <a href="{% url 'project_management:pending_requests' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'pending_requests' %}text-primary font-bold{% endif %}">Pending Requests</a>
+        <a href="{% url 'project_management:pending_offers_proj' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'pending_offers_proj' %}text-primary font-bold{% endif %}">Pending Offers</a>
+        <a href="{% url 'project_management:purchase_orders_list' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'purchase_orders_list' %}text-primary font-bold{% endif %}">Order Tracker</a>
+        <a href="{% url 'project_management:transfer_materials' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'transfer_materials' %}text-primary font-bold{% endif %}">Transfer Materials</a>
+        <a href="{% url 'user_management:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 cursor-pointer">Logout</a>
+        <form id="logout-form-mobile" action="{% url 'user_management:logout' %}" method="POST" class="hidden">{% csrf_token %}</form>
+
+      {% elif request.user.profile.user_type == 'warehouse' %}
+        <a href="{% url 'warehouse:home_warehouse' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'home_warehouse' %}text-primary font-bold{% endif %}">Home</a>
+        <a href="{% url 'warehouse:projects_list' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">Projects</a>
+        <a href="{% url 'user_management:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 cursor-pointer">Logout</a>
+        <form id="logout-form-mobile" action="{% url 'user_management:logout' %}" method="POST" class="hidden">{% csrf_token %}</form>
+      {% endif %}
+    {% else %}
+      <a href="{% url 'user_management:login' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'login' %}text-primary font-bold{% endif %}">Login</a>
+    {% endif %}
+  </div>
+</nav>
+
+      <!-- Overlay -->
+      <div id="menu-overlay" class="fixed inset-0 bg-overlay opacity-0 pointer-events-none transition-opacity duration-300 z-10"></div>
     </header>
     {% endif %}
 
-    <!-- Main Content -->
-    <main class="flex-grow max-w-5xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-16">
-    {% block content %}
-    {% endblock %}
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-8 py-6">
+      {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-surface/90 text-muted py-4 sm:py-6 mt-auto">
-    <div class="max-w-7xl mx-auto text-center text-xs sm:text-sm text-muted px-4">
-        &copy; 2025 StockWise. All rights reserved.
-    </div>
-    </footer>
+  </div>
 
-</div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Wrap all tables with responsive div
+      document.querySelectorAll("table").forEach(table => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "table-responsive";
+        table.parentNode.insertBefore(wrapper, table);
+        wrapper.appendChild(table);
+      });
 
-{% block scripts %}{% endblock %}
+      const menuToggle = document.getElementById("menu-toggle");
+      const menuClose = document.getElementById("menu-close");
+      const mobileMenu = document.getElementById("mobile-menu");
+      const menuOverlay = document.getElementById("menu-overlay");
+
+      function openMenu() {
+        mobileMenu.classList.remove("translate-x-full");
+        mobileMenu.classList.add("translate-x-0");
+        menuOverlay.classList.remove("opacity-0", "pointer-events-none");
+        menuOverlay.classList.add("opacity-100", "pointer-events-auto");
+        menuToggle.setAttribute("aria-expanded", "true");
+        mobileMenu.setAttribute("aria-hidden", "false");
+      }
+
+      function closeMenu() {
+        mobileMenu.classList.add("translate-x-full");
+        mobileMenu.classList.remove("translate-x-0");
+        menuOverlay.classList.add("opacity-0", "pointer-events-none");
+        menuOverlay.classList.remove("opacity-100", "pointer-events-auto");
+        menuToggle.setAttribute("aria-expanded", "false");
+        mobileMenu.setAttribute("aria-hidden", "true");
+      }
+
+      menuToggle.addEventListener("click", () => {
+        const expanded = menuToggle.getAttribute("aria-expanded") === "true";
+        if (expanded) {
+          closeMenu();
+        } else {
+          openMenu();
+        }
+      });
+
+      menuClose.addEventListener("click", closeMenu);
+      menuOverlay.addEventListener("click", closeMenu);
+
+      // Close mobile menu on escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeMenu();
+        }
+      });
+    });
+  </script>
 </body>
 </html>

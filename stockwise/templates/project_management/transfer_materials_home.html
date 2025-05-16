@@ -3,8 +3,10 @@
 {% block title %}Transfer Materials{% endblock %}
 
 {% block content %}
+
+<h1 class="text-3xl font-bold mb-8 text-primary">Transfer Materials</h1>
+
 <div class="max-w-7xl mx-auto bg-surface/80 border border-primary rounded-xl p-8 shadow-md">
-  <h1 class="text-3xl font-bold mb-8 text-primary">Transfer Materials</h1>
 
   <!-- Filter Row -->
   <div class="flex items-center gap-4 mb-8 flex-wrap">
@@ -22,63 +24,54 @@
     </select>
   </div>
 
-  <!-- Grid of Project Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for entry in project_materials %}
-      <section class="project-card project-{{ entry.project.project_id }} bg-surface/60 border border-primary/40 rounded-lg p-6 shadow-sm w-full">
-        <h2 class="text-xl font-semibold mb-4 text-primary">Project: {{ entry.project.project_name }}</h2>
-
-        {% if entry.materials %}
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm border border-muted rounded-lg">
-              <thead class="bg-muted/20 text-left">
-                <tr>
-                  <th class="px-3 py-2 border-b border-muted">Material</th>
-                  <th class="px-3 py-2 border-b border-muted">Quantity</th>
-                  <th class="px-3 py-2 border-b border-muted">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for im in entry.materials %}
-                  {% if im.quantity > 0 %}
-                    <tr class="hover:bg-primary/20 transition">
-                      <td class="px-3 py-2 border-b border-muted break-words">{{ im.material.material_name }}</td>
-                      <td class="px-3 py-2 border-b border-muted">{{ im.quantity }} {{ im.material.unit }}</td>
-                      <td class="px-3 py-2 border-b border-muted">
-                        <a href="{% url 'project_management:transfer_material_form' entry.project.project_id im.material.material_id %}"
-                           class="text-primary font-semibold hover:underline hover:text-yellow-400 whitespace-nowrap">
-                          Transfer
-                        </a>
-                      </td>
-                    </tr>
-                  {% endif %}
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% else %}
-          <p class="text-muted italic">No materials found for this project.</p>
-        {% endif %}
-      </section>
-    {% endfor %}
-  </div>
+  <!-- Single table with all materials -->
+  <table class="w-full text-sm border border-muted rounded-lg table-auto">
+    <thead class="bg-muted/20 text-left">
+      <tr>
+        <th class="px-3 py-2 border-b border-muted">Project</th>
+        <th class="px-3 py-2 border-b border-muted break-words">Material</th>
+        <th class="px-3 py-2 border-b border-muted whitespace-nowrap">Quantity</th>
+        <th class="px-3 py-2 border-b border-muted whitespace-nowrap">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in project_materials %}
+        {% for im in entry.materials %}
+          {% if im.quantity > 0 %}
+          <tr class="project-{{ entry.project.project_id }}">
+            <td class="px-3 py-2 border-b border-muted whitespace-nowrap">{{ entry.project.project_name }}</td>
+            <td class="px-3 py-2 border-b border-muted break-words">{{ im.material.material_name }}</td>
+            <td class="px-3 py-2 border-b border-muted whitespace-nowrap">{{ im.quantity }} {{ im.material.unit }}</td>
+            <td class="px-3 py-2 border-b border-muted whitespace-nowrap">
+              <a href="{% url 'project_management:transfer_material_form' entry.project.project_id im.material.material_id %}" 
+                 class="inline-block px-3 py-1 text-surface bg-primary rounded hover:bg-yellow-600 transition font-semibold">
+                Transfer
+              </a>
+            </td>
+          </tr>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
-<!-- JavaScript for filtering -->
+<!-- JavaScript for filtering table rows -->
 <script>
   const filterSelect = document.getElementById('projectFilter');
-  const cards = document.querySelectorAll('.project-card');
+  const rows = document.querySelectorAll('tbody tr');
 
   filterSelect.addEventListener('change', () => {
     const selected = filterSelect.value;
 
-    cards.forEach(card => {
+    rows.forEach(row => {
       if (selected === 'all') {
-        card.classList.remove('hidden');
+        row.classList.remove('hidden');
       } else {
-        card.classList.toggle('hidden', !card.classList.contains(selected));
+        row.classList.toggle('hidden', !row.classList.contains(selected));
       }
     });
   });
 </script>
+
 {% endblock %}

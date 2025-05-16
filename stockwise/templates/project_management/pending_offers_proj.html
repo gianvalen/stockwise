@@ -71,7 +71,8 @@
                     {% csrf_token %}
                     <input type="hidden" name="offer_id" value="{{ offer.offer_id }}">
                     <input type="hidden" name="action" value="approve">
-                    <button type="submit" class="bg-primary text-surface px-3 py-1 rounded hover:bg-green-600">
+                    <button type="submit" class="bg-primary text-surface px-3 py-1 rounded hover:bg-green-600 transition font-semibold">
+          
                       Approve
                     </button>
                   </form>
@@ -79,7 +80,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="offer_id" value="{{ offer.offer_id }}">
                     <input type="hidden" name="action" value="reject">
-                    <button type="submit" class="bg-gray-700 text-secondary px-3 py-1 rounded hover:bg-red-600">
+                    <button type="submit" class="bg-gray-700 text-secondary px-3 py-1 rounded hover:bg-red-600 transition font-semibold">
                       Reject
                     </button>
                   </form>

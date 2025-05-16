@@ -1,68 +1,103 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-6">
-  <h1 class="text-2xl font-semibold mb-6 text-gray-800">Purchase Orders List</h1>
+<h1 class="text-3xl font-bold mb-6 text-primary">My Deliveries</h1>
 
-  <table class="min-w-full border border-gray-300 rounded-lg shadow-sm overflow-hidden">
-    <thead class="bg-gray-100 border-b border-gray-300">
-      <tr>
-        <th class="text-left px-4 py-3 font-semibold text-gray-700">Offer ID</th>
-        <th class="text-left px-4 py-3 font-semibold text-gray-700">PO ID</th>
-        <th class="text-left px-4 py-3 font-semibold text-gray-700">Delivery Date</th>
-        <th class="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
-        <th class="text-left px-4 py-3 font-semibold text-gray-700">Material</th>
-        <th class="text-left px-4 py-3 font-semibold text-gray-700">Total Quantity</th>
-        <th class="text-center px-4 py-3 font-semibold text-gray-700">Actions</th>
-      </tr>
-    </thead>
-    <tbody class="bg-white divide-y divide-gray-200">
-      {% for po in purchase_orders %}
+<div class="border border-gray-600 rounded-xl bg-surface/50 p-6 max-w-7xl mx-auto">
+
+  <!-- Filter Form -->
+  <form method="get" class="flex gap-4 flex-wrap mb-6 items-center">
+    <!-- Status Filter -->
+    <div>
+      <label for="status" class="block text-secondary font-medium mb-1">Status</label>
+      <select name="status" id="status"
+              class="bg-surface text-secondary border border-muted rounded px-3 py-2 w-52 focus:outline-none focus:ring-2 focus:ring-primary"
+              onchange="this.form.submit()">
+        <option value="" {% if not status_filter %}selected{% endif %}>All Statuses</option>
+        <option value="For Delivery" {% if status_filter == 'For Delivery' %}selected{% endif %}>For Delivery</option>
+        <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+      </select>
+    </div>
+
+    <!-- Project Filter -->
+    <div>
+      <label for="project" class="block text-secondary font-medium mb-1">Project</label>
+      <select name="project" id="project"
+              class="bg-surface text-secondary border border-muted rounded px-3 py-2 w-52 focus:outline-none focus:ring-2 focus:ring-primary"
+              onchange="this.form.submit()">
+        <option value="" {% if not project_filter %}selected{% endif %}>All Projects</option>
+        {% for project in all_projects %}
+          <option value="{{ project.project_id }}" {% if project_filter == project.project_id %}selected{% endif %}>
+            {{ project.project_name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  {% if purchase_orders %}
+    <table class="w-full text-sm border border-muted rounded overflow-hidden">
+      <thead class="bg-muted/20 text-left">
         <tr>
-          <td class="px-4 py-3 whitespace-nowrap text-gray-900 font-medium">{{ po.offerpurchaseorder.offer.offer_id }}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-gray-900 font-medium">{{ po.po_id }}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-gray-700">{{ po.delivery_date|date:"Y-m-d" }}</td>
-          <td class="px-4 py-3 whitespace-nowrap">
-            {% if po.po_status == 'Completed' %}
-              <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ po.po_status }}</span>
-            {% else %}
-              <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ po.po_status }}</span>
-            {% endif %}
-          </td>
-          <td class="px-4 py-3 whitespace-nowrap text-gray-700">
-            {% if po.offerpurchaseorder and po.offerpurchaseorder.offer and po.offerpurchaseorder.offer.offerrequestdetail %}
-              {{ po.offerpurchaseorder.offer.offerrequestdetail.request_detail.material.material_name }}
-            {% else %}
-              <span class="text-gray-400 italic">N/A</span>
-            {% endif %}
-          </td>
-          <td class="px-4 py-3 whitespace-nowrap text-gray-700">
-            {% if po.offerpurchaseorder and po.offerpurchaseorder.offer %}
-              {{ po.offerpurchaseorder.offer.total_quantity }}
-            {% else %}
-              <span class="text-gray-400 italic">N/A</span>
-            {% endif %}
-          </td>
-          <td class="px-4 py-3 whitespace-nowrap text-center">
-            {% if po.po_status != 'Completed' %}
-              <form method="post" class="inline-block">
-                {% csrf_token %}
-                <input type="hidden" name="po_id" value="{{ po.po_id }}">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-4 rounded shadow">
-                  Complete Order
-                </button>
-              </form>
-            {% else %}
-              <span class="text-gray-500 italic">Completed</span>
-            {% endif %}
-          </td>
+          <th class="px-3 py-2 border-b border-muted">Offer ID</th>
+          <th class="px-3 py-2 border-b border-muted">PO ID</th>
+          <th class="px-3 py-2 border-b border-muted">Delivery Date</th>
+          <th class="px-3 py-2 border-b border-muted">Status</th>
+          <th class="px-3 py-2 border-b border-muted">Material</th>
+          <th class="px-3 py-2 border-b border-muted">Total Quantity</th>
+          <th class="px-3 py-2 border-b border-muted text-center">Actions</th>
         </tr>
-      {% empty %}
-        <tr>
-          <td colspan="6" class="text-center py-6 text-gray-500 italic">No purchase orders found.</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for po in purchase_orders %}
+          <tr>
+            <td class="px-3 py-2 border-b border-muted font-medium">{{ po.offerpurchaseorder.offer.offer_id }}</td>
+            <td class="px-3 py-2 border-b border-muted font-medium">{{ po.po_id }}</td>
+            <td class="px-3 py-2 border-b border-muted">{{ po.delivery_date|date:"Y-m-d" }}</td>
+            <td class="px-3 py-2 border-b border-muted">
+              {% if po.po_status == 'Completed' %}
+                <span class="text-green-600 font-semibold">{{ po.po_status }}</span>
+              {% else %}
+                <span class="text-yellow-600 font-semibold">{{ po.po_status }}</span>
+              {% endif %}
+            </td>
+            <td class="px-3 py-2 border-b border-muted">
+              {% if po.offerpurchaseorder and po.offerpurchaseorder.offer and po.offerpurchaseorder.offer.offerrequestdetail %}
+                {{ po.offerpurchaseorder.offer.offerrequestdetail.request_detail.material.material_name }}
+              {% else %}
+                <span class="text-muted italic">N/A</span>
+              {% endif %}
+            </td>
+            <td class="px-3 py-2 border-b border-muted">
+              {% if po.offerpurchaseorder and po.offerpurchaseorder.offer %}
+                {{ po.offerpurchaseorder.offer.total_quantity }}
+              {% else %}
+                <span class="text-muted italic">N/A</span>
+              {% endif %}
+            </td>
+            <td class="px-3 py-2 border-b border-muted text-center">
+              {% if po.po_status != 'Completed' %}
+                <form method="post" class="inline-block">
+                  {% csrf_token %}
+                  <input type="hidden" name="po_id" value="{{ po.po_id }}">
+                  <button type="submit" class="bg-primary hover:bg-primary-dark text-surface font-semibold text-sm py-1 px-3 rounded shadow">
+                    Receive Order
+                  </button>
+                </form>
+              {% else %}
+                <span class="text-secondary italic">Completed</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-5 text-muted italic">No purchase orders found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-center text-muted italic">No purchase orders found.</p>
+  {% endif %}
 </div>
 {% endblock %}
