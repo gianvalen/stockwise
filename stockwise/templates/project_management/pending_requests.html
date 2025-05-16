@@ -45,18 +45,31 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {% for pr in purchase_requests %}
         <div class="border border-primary rounded-lg p-4 bg-surface/80 shadow-sm">
-          <h3 class="text-xl font-semibold mb-2 text-secondary">{{ pr.project.project_name }}</h3>
+          <h3 class="text-2xl sm:text-3xl font-bold text-primary mb-4">{{ pr.project.project_name }}</h3>
           <p class="mb-1"><strong>Status:</strong> {{ pr.request_status }}</p>
-          <p class="mb-3"><strong> By:</strong> {{ pr.requested_by }}</p>
+          <p class="mb-3"><strong>Requested by:</strong> {{ pr.requested_by }}</p>
 
-          <h4 class="font-semibold mb-2 text-secondary">Request Details:</h4>
-          <ul class="list-disc list-inside text-sm mb-4">
-            {% for detail in pr.requestdetail_set.all %}
-              <li>{{ detail.material.material_name }} — Qty: {{ detail.quantity }}</li>
-            {% empty %}
-              <li>No request details.</li>
-            {% endfor %}
-          </ul>
+          <!-- <h4 class="font-semibold mb-2 text-secondary">Request Details:</h4> -->
+          <table class="w-full text-sm mb-4 border border-muted rounded overflow-hidden">
+            <thead class="bg-muted/20 text-left">
+              <tr>
+                <th class="px-3 py-2 border-b border-muted">Item</th>
+                <th class="px-3 py-2 border-b border-muted">Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for detail in pr.requestdetail_set.all %}
+                <tr>
+                  <td class="px-3 py-2 border-b border-muted">{{ detail.material.material_name }}</td>
+                  <td class="px-3 py-2 border-b border-muted">{{ detail.quantity }} {{detail.material.unit}}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="2" class="px-3 py-2 text-center text-secondary italic">No request details.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
 
           {% if pr.request_status == 'Waiting for Approval' %}
             <form method="post" class="inline-block mr-2">
