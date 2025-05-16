@@ -47,85 +47,96 @@
 
         {% if request.user.is_authenticated %}
             {% if request.user.profile.user_type == 'procurement' %}
-            <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
-                <a href="{% url 'procurement:home_procurement' %}"
-                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_procurement' %}text-primary font-bold{% endif %}">
-                    Home
-                </a>
-                <a href="{% url 'procurement:projects_list' %}"
-                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
-                    Projects
-                </a>
-                <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
-                    Logout
-                    </button>
-                </form>
-            </nav>
+                <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
+                    <a href="{% url 'procurement:home_procurement' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_procurement' %}text-primary font-bold{% endif %}">
+                        Home
+                    </a>
+                    <a href="{% url 'procurement:projects_list' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                        Projects
+                    </a>
+                    <a href="{% url 'procurement:pending_offers' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'pending_offers' %}text-primary font-bold{% endif %}">
+                        Pending Offers
+                    </a>
+                    <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
+                            Logout
+                        </button>
+                    </form>
+                </nav>
 
             {% elif request.user.profile.user_type == 'supplier' %}
-            <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
-                <a href="{% url 'supply:home_supplier' %}"
-                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_supplier' %}text-primary font-bold{% endif %}">
-                    Home
-                </a>
-                <a href="{% url 'supply:requests_list' %}"
-                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'requests_list' %}text-primary font-bold{% endif %}">
-                    Purchase Requests
-                </a>
-                <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
-                    Logout
-                    </button>
-                </form>
-            </nav>
+                <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
+                    <a href="{% url 'supply:home_supplier' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_supplier' %}text-primary font-bold{% endif %}">
+                        Home
+                    </a>
+                    <a href="{% url 'supply:requests_list' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'requests_list' %}text-primary font-bold{% endif %}">
+                        Purchase Requests
+                    </a>
+                    <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
+                        Logout
+                        </button>
+                    </form>
+                </nav>
 
             {% elif request.user.profile.user_type == 'manager' %}
-            <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
-                <a href="{% url 'project_management:home_manager' %}"
-                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_pm' %}text-primary font-bold{% endif %}">
-                    Home
-                </a>
-                <a href="{% url 'project_management:pending_requests' %}"
-                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'pending_requests' %}text-primary font-bold{% endif %}">
-                    Pending Requests
-                </a>
-                <a href="{% url 'procurement:projects_list' %}"
-                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
-                    Projects
-                </a>
-                <a href="{% url 'project_management:transfer_materials' %}"
-                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'transfer_materials' %}text-primary font-bold{% endif %}">
-                    Transfer Materials
-                </a>
-                <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
-                    Logout
-                    </button>
-                </form>
-            </nav>
+                <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
+                    <a href="{% url 'project_management:home_manager' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_pm' %}text-primary font-bold{% endif %}">
+                        Home
+                    </a>
+                    <a href="{% url 'project_management:pending_requests' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'pending_requests' %}text-primary font-bold{% endif %}">
+                        Pending Requests
+                    </a>
+
+                    <!-- Add this Pending Offers link -->
+                    <a href="{% url 'project_management:pending_offers_proj' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'pending_offers_proj' %}text-primary font-bold{% endif %}">
+                        Pending Offers
+                    </a>
+
+                    <a href="{% url 'procurement:projects_list' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                        Projects
+                    </a>
+                    <a href="{% url 'project_management:transfer_materials' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'transfer_materials' %}text-primary font-bold{% endif %}">
+                        Transfer Materials
+                    </a>
+                    <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
+                        Logout
+                        </button>
+                    </form>
+                </nav>
 
             {% elif request.user.profile.user_type == 'warehouse' %}
-            <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
-                <a href="{% url 'warehouse:home_warehouse' %}"
-                    class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_warehouse' %}text-primary font-bold{% endif %}">
-                    Home
-                </a>
+                <nav class="flex flex-row space-x-4 sm:space-x-6 text-sm font-semibold text-secondary w-full sm:w-auto">
+                    <a href="{% url 'warehouse:home_warehouse' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_warehouse' %}text-primary font-bold{% endif %}">
+                        Home
+                    </a>
 
-            <a href="{% url 'warehouse:projects_list' %}"
-                class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
-                Projects
-            </a>
-                <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
-                    Logout
-                    </button>
-                </form>
-            </nav>
+                    <a href="{% url 'warehouse:projects_list' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                        Projects
+                    </a>
+                    <form action="{% url 'user_management:logout' %}" method="POST" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="hover:text-primary transition px-2 py-1 text-left">
+                        Logout
+                        </button>
+                    </form>
+                </nav>
             {% endif %}
         {% endif %}
     </div>
