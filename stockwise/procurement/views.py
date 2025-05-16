@@ -125,3 +125,7 @@ def pending_offers(request):
         'status_filter': status_filter,
     }
     return render(request, 'pending_offers_proc.html', context)
+
+def my_requests(request):
+    user_requests = PurchaseRequest.objects.filter(requested_by=request.user).order_by('-request_date')
+    return render(request, 'my_requests.html', {'requests': user_requests})
