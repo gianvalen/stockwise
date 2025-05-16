@@ -45,9 +45,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {% for pr in purchase_requests %}
         <div class="border border-primary rounded-lg p-4 bg-surface/80 shadow-sm">
-          <h3 class="text-xl font-semibold mb-2 text-secondary">PR ID: {{ pr.pr_id }}</h3>
+          <h3 class="text-xl font-semibold mb-2 text-secondary">{{ pr.project.project_name }}</h3>
           <p class="mb-1"><strong>Status:</strong> {{ pr.request_status }}</p>
-          <p class="mb-3"><strong>Project:</strong> {{ pr.project.project_name }}</p>
+          <p class="mb-3"><strong> By:</strong> {{ pr.requested_by }}</p>
 
           <h4 class="font-semibold mb-2 text-secondary">Request Details:</h4>
           <ul class="list-disc list-inside text-sm mb-4">
