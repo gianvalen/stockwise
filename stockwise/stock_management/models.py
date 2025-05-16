@@ -83,6 +83,7 @@ class Offer(models.Model):
     total_quantity = models.IntegerField()
     offer_status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='Pending')
     offer_status_proj = models.CharField(max_length=255, choices=STATUS_CHOICES, default='Pending')
+    offered_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
         # managed = False
