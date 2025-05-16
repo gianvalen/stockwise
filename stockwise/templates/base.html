@@ -57,11 +57,11 @@
                         Projects
                     </a>
                     <a href="{% url 'procurement:my_requests' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'my_requests' %}text-primary font-bold{% endif %}">
                         My Requests
                     </a>
                     <a href="{% url 'project_management:purchase_orders_list' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'purchase_orders_list' %}text-primary font-bold{% endif %}">
                         Order Tracker
                     </a>
                     <a href="{% url 'procurement:pending_offers' %}"
@@ -83,11 +83,11 @@
                         Home
                     </a>
                     <a href="{% url 'supply:my_offers' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'requests_list' %}text-primary font-bold{% endif %}">
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'my_offers' %}text-primary font-bold{% endif %}">
                         My Offers
                     </a>
                     <a href="{% url 'supply:purchase_order_tracker' %}"
-                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'requests_list' %}text-primary font-bold{% endif %}">
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'purchase_order_tracker' %}text-primary font-bold{% endif %}">
                         Delivery Tracker
                     </a>
                     <a href="{% url 'supply:requests_list' %}"
