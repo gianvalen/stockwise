@@ -9,15 +9,20 @@
                 <th class="border px-3 py-2 text-left">Request ID</th>
                 <th class="border px-3 py-2 text-left">Request Date</th>
                 <th class="border px-3 py-2 text-left">Project</th>
+                <th class="border px-3 py-2 text-left">Material</th>
+                <th class="border px-3 py-2 text-left">Quantity</th>
                 <th class="border px-3 py-2 text-left">Status</th>
             </tr>
         </thead>
         <tbody>
             {% for req in requests %}
+                {% for detail in req.requestdetail_set.all %}
                 <tr class="hover:bg-gray-50">
                     <td class="border px-3 py-2">{{ req.pr_id }}</td>
                     <td class="border px-3 py-2">{{ req.request_date|date:"Y-m-d H:i" }}</td>
                     <td class="border px-3 py-2">{{ req.project.project_name }}</td>
+                    <td class="border px-3 py-2">{{ detail.material.material_name }}</td>
+                    <td class="border px-3 py-2">{{ detail.quantity }}</td>
                     <td class="border px-3 py-2">
                         {% if req.request_status == 'Approved' %}
                             <span class="text-green-600 font-medium">{{ req.request_status }}</span>
@@ -28,9 +33,10 @@
                         {% endif %}
                     </td>
                 </tr>
+                {% endfor %}
             {% empty %}
                 <tr>
-                    <td colspan="4" class="text-center py-4 text-gray-500">No purchase requests found.</td>
+                    <td colspan="6" class="text-center py-4 text-gray-500">No purchase requests found.</td>
                 </tr>
             {% endfor %}
         </tbody>
