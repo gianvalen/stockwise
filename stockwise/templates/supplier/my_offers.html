@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="text-2xl font-semibold mb-4">My Offers</h2>
+<div class="overflow-x-auto">
+    <table class="w-full border border-gray-300 rounded text-sm">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="border px-3 py-2 text-left">Offer ID</th>
+                <th class="border px-3 py-2 text-left">Date</th>
+                <th class="border px-3 py-2 text-left">Total Quantity</th>
+                <th class="border px-3 py-2 text-left">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for offer in offers %}
+                <tr class="hover:bg-gray-50">
+                    <td class="border px-3 py-2">{{ offer.offer_id }}</td>
+                    <td class="border px-3 py-2">{{ offer.offer_date|date:"Y-m-d H:i" }}</td>
+                    <td class="border px-3 py-2">{{ offer.total_quantity }}</td>
+                    <td class="border px-3 py-2">
+                        {% if offer.offer_status == 'Accepted' %}
+                            <span class="text-green-600 font-medium">{{ offer.offer_status }}</span>
+                        {% elif offer.offer_status == 'Rejected' %}
+                            <span class="text-red-600 font-medium">{{ offer.offer_status }}</span>
+                        {% else %}
+                            <span class="text-yellow-600 font-medium">{{ offer.offer_status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-gray-500">No offers found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -20,14 +20,6 @@ class Inventory(models.Model):
         return f"{self.inventory_id} - {self.storage_location}"
 
 
-# class InventoryMaterial(models.Model):
-#     material = models.OneToOneField('Material', models.DO_NOTHING, primary_key=True)
-#     inventory = models.ForeignKey(Inventory, models.DO_NOTHING)
-
-#     class Meta:
-#         managed = False
-#         db_table = 'inventory_material'
-
 class InventoryMaterial(models.Model):
     im_id = models.CharField(primary_key=True, max_length=5)  # add an auto PK
     material = models.ForeignKey('Material', models.DO_NOTHING)

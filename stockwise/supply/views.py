@@ -1,8 +1,10 @@
+import random
+import string
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from user_management.decorators import user_type_required
-from stock_management.models import PurchaseRequest, RequestDetail, OfferRequestDetail
+from stock_management.models import PurchaseRequest, RequestDetail, OfferRequestDetail, Offer, PurchaseOrder
 from .forms import OfferForm
 
 @login_required
@@ -66,12 +68,25 @@ def offer_material(request, pr_id, material_id):
     return render(request, 'offer_material.html', context)
 
 
-import random
-import string
-from stock_management.models import Offer
-
 def generate_offer_id():
     while True:
         offer_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
         if not Offer.objects.filter(offer_id=offer_id).exists():
             return offer_id
+        
+def my_offers(request):
+    offers = Offer.objects.filter(offered_by=request.user).order_by('-offer_date')
+    return render(request, 'my_offers.html', {'offers': offers})
+
+def purchase_order_tracker(request):
+    user = request.user
+
+    # Get all PurchaseOrders where the Offer is created by current user
+    purchase_orders = PurchaseOrder.objects.filter(
+        offerpurchaseorder__offer__offered_by=user
+    ).order_by('-delivery_date')
+
+    context = {
+        'purchase_orders': purchase_orders,
+    }
+    return render(request, 'purchase_order_tracker.html', context)

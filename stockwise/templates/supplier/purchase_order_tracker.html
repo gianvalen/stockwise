@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="text-2xl font-semibold mb-4">My Deliveries</h2>
+<div class="overflow-x-auto">
+    <table class="w-full border border-gray-300 rounded text-sm">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="border px-3 py-2 text-left">Offer ID</th>
+                <th class="border px-3 py-2 text-left">Estimated Delivery Date</th>
+                <th class="border px-3 py-2 text-left">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for po in purchase_orders %}
+                <tr class="hover:bg-gray-50">
+                    <td class="border px-3 py-2">{{ po.offerpurchaseorder.offer.offer_id }}</td>
+                    <td class="border px-3 py-2">{{ po.delivery_date|date:"Y-m-d H:i" }}</td>
+                    <td class="border px-3 py-2">
+                        {% if po.po_status == 'Completed' %}
+                            <span class="text-green-600 font-medium">{{ po.po_status }}</span>
+                        {% else %}
+                            <span class="text-yellow-600 font-medium">{{ po.po_status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center py-4 text-gray-500">No purchase orders found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
