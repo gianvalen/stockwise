@@ -13,16 +13,24 @@
     {% with materials_in_inventory|dictsort:"material.material_name" as sorted_materials %}
       {% with non_empty_materials=sorted_materials|dictsort:"quantity" %}
         {% if non_empty_materials|length > 0 %}
-          <ul class="space-y-2 text-secondary">
-            {% for im in non_empty_materials %}
-              {% if im.quantity > 0 %}
-                <li class="border-b border-muted pb-2">
-                  <span class="font-semibold">{{ im.material.material_name }}</span> ({{ im.material.material_type }}) —
-                  <span class="text-muted">{{ im.quantity }} {{ im.material.unit }}</span>
-                </li>
-              {% endif %}
-            {% endfor %}
-          </ul>
+              <ul class="space-y-2 text-secondary">
+              {% for im in materials_in_inventory %}
+                {% if im.quantity > 0 %}
+                  <li class="border-b border-muted pb-2 flex items-center justify-between">
+                    <div>
+                      <span class="font-semibold">{{ im.material.material_name }}</span> ({{ im.material.material_type }}) —
+                      <span class="text-muted">{{ im.quantity }} {{ im.material.unit }}</span>
+                    </div>
+
+                    {% if im.is_low_stock %}
+                      <span class="ml-4 px-2 py-0.5 text-sm bg-red-100 text-red-700 rounded-md font-medium">
+                        ⚠ Low Stock
+                      </span>
+                    {% endif %}
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
         {% else %}
           <p class="text-muted">No materials found.</p>
         {% endif %}

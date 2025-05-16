@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% load math_filters %}
 
 {% block title %}Pending Offers{% endblock %}
@@ -7,19 +6,12 @@
 {% block content %}
 <h1 class="text-3xl font-bold mb-6 text-primary">Offers</h1>
 
-{% if messages %}
-  <ul class="mb-4">
-    {% for message in messages %}
-      <li class="text-green-600 font-medium">{{ message }}</li>
-    {% endfor %}
-  </ul>
-{% endif %}
-
 <div class="border border-gray-600 rounded-xl bg-surface/50 p-6 space-y-6 max-w-7xl mx-auto">
 
   <!-- Filter Controls -->
-  <form method="get" class="flex gap-4 mb-6 items-center">
-    <label for="status" class="text-secondary font-medium">Filter by Status:</label>
+  <form method="get" class="flex gap-4 flex-wrap mb-6 items-center">
+    <!-- Status Filter -->
+    <label for="status" class="text-secondary font-medium">Status:</label>
     <select name="status" id="status"
             class="px-3 py-2 rounded border border-muted bg-surface text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
             onchange="this.form.submit()">
@@ -27,6 +19,17 @@
       <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
       <option value="Accepted" {% if status_filter == 'Accepted' %}selected{% endif %}>Accepted</option>
       <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
+    </select>
+
+    <!-- Project Filter -->
+    <label for="project" class="text-secondary font-medium">Project:</label>
+    <select name="project" id="project"
+            class="px-3 py-2 rounded border border-muted bg-surface text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+            onchange="this.form.submit()">
+      <option value="" {% if not project_filter %}selected{% endif %}>All Projects</option>
+      {% for project in all_projects %}
+        <option value="{{ project.project_id }}" {% if project_filter == project.project_id %}selected{% endif %}>{{ project.project_name }}</option>
+      {% endfor %}
     </select>
   </form>
 
@@ -41,51 +44,52 @@
           <th class="px-3 py-2 border-b border-muted">Unit Price</th>
           <th class="px-3 py-2 border-b border-muted">Total Quantity</th>
           <th class="px-3 py-2 border-b border-muted">Total Price</th>
-          <th class="px-3 py-2 border-b border-muted">Status</th>
+          <th class="px-3 py-2 border-b border-muted">Status (PM)</th>
           <th class="px-3 py-2 border-b border-muted">Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for offer in offers %}
-      <tr>
-        <td class="px-3 py-2 border-b border-muted">{{ offer.offer_id }}</td>
-        <td class="px-3 py-2 border-b border-muted">{{ offer.offered_by.username }}</td>
-        <td class="px-3 py-2 border-b border-muted">{{ offer.offer_date|date:"Y-m-d H:i" }}</td>
-        <td class="px-3 py-2 border-b border-muted">{{ offer.unit_price }}</td>
-        <td class="px-3 py-2 border-b border-muted">{{ offer.total_quantity }}</td>
-        <td class="px-3 py-2 border-b border-muted">
-          {% if offer.quantity_per_price > 0 %}
-            ₱ {{ offer.total_quantity|div:offer.quantity_per_price|mul:offer.unit_price|floatformat:2 }}
-          {% else %}
-            Invalid
+          {% if offer.offer_status == 'Accepted' %}
+            <tr>
+              <td class="px-3 py-2 border-b border-muted">{{ offer.offer_id }}</td>
+              <td class="px-3 py-2 border-b border-muted">{{ offer.offered_by.username }}</td>
+              <td class="px-3 py-2 border-b border-muted">{{ offer.offer_date|date:"Y-m-d H:i" }}</td>
+              <td class="px-3 py-2 border-b border-muted">{{ offer.unit_price }}</td>
+              <td class="px-3 py-2 border-b border-muted">{{ offer.total_quantity }}</td>
+              <td class="px-3 py-2 border-b border-muted">
+                {% if offer.quantity_per_price > 0 %}
+                  ₱ {{ offer.total_quantity|div:offer.quantity_per_price|mul:offer.unit_price|floatformat:2 }}
+                {% else %}
+                  Invalid
+                {% endif %}
+              </td>
+              <td class="px-3 py-2 border-b border-muted">{{ offer.offer_status_proj }}</td>
+              <td class="px-3 py-2 border-b border-muted">
+                {% if offer.offer_status_proj == 'Pending' %}
+                  <form method="post" class="inline-block mr-1">
+                    {% csrf_token %}
+                    <input type="hidden" name="offer_id" value="{{ offer.offer_id }}">
+                    <input type="hidden" name="action" value="approve">
+                    <button type="submit" class="bg-primary text-surface px-3 py-1 rounded hover:bg-green-600">
+                      Approve
+                    </button>
+                  </form>
+                  <form method="post" class="inline-block">
+                    {% csrf_token %}
+                    <input type="hidden" name="offer_id" value="{{ offer.offer_id }}">
+                    <input type="hidden" name="action" value="reject">
+                    <button type="submit" class="bg-gray-700 text-secondary px-3 py-1 rounded hover:bg-red-600">
+                      Reject
+                    </button>
+                  </form>
+                {% else %}
+                  <span class="italic text-secondary">Already {{ offer.offer_status_proj }}</span>
+                {% endif %}
+              </td>
+            </tr>
           {% endif %}
-        </td>
-        <td class="px-3 py-2 border-b border-muted">{{ offer.offer_status_proj }}</td>
-        <td class="px-3 py-2 border-b border-muted">
-          {% if offer.offer_status_proj == 'Pending' %}
-            <form method="post" class="inline-block mr-1">
-              {% csrf_token %}
-              <input type="hidden" name="offer_id" value="{{ offer.offer_id }}">
-              <input type="hidden" name="action" value="approve">
-              <button type="submit" class="bg-primary text-surface px-3 py-1 rounded hover:bg-green-600">
-                Approve
-              </button>
-            </form>
-            <form method="post" class="inline-block">
-              {% csrf_token %}
-              <input type="hidden" name="offer_id" value="{{ offer.offer_id }}">
-              <input type="hidden" name="action" value="reject">
-              <button type="submit" class="bg-gray-700 text-secondary px-3 py-1 rounded hover:bg-red-600">
-                Reject
-              </button>
-            </form>
-          {% else %}
-            <span class="italic text-secondary">Already {{ offer.offer_status_proj }}</span>
-          {% endif %}
-        </td>
-      </tr>
-    {% endfor %}
-
+        {% endfor %}
       </tbody>
     </table>
   {% else %}
