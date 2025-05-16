@@ -1,35 +1,75 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2 class="text-2xl font-semibold mb-4">My Deliveries</h2>
-<div class="overflow-x-auto">
-    <table class="w-full border border-gray-300 rounded text-sm">
-        <thead class="bg-gray-100">
-            <tr>
-                <th class="border px-3 py-2 text-left">Offer ID</th>
-                <th class="border px-3 py-2 text-left">Estimated Delivery Date</th>
-                <th class="border px-3 py-2 text-left">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for po in purchase_orders %}
-                <tr class="hover:bg-gray-50">
-                    <td class="border px-3 py-2">{{ po.offerpurchaseorder.offer.offer_id }}</td>
-                    <td class="border px-3 py-2">{{ po.delivery_date|date:"Y-m-d H:i" }}</td>
-                    <td class="border px-3 py-2">
-                        {% if po.po_status == 'Completed' %}
-                            <span class="text-green-600 font-medium">{{ po.po_status }}</span>
-                        {% else %}
-                            <span class="text-yellow-600 font-medium">{{ po.po_status }}</span>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="3" class="text-center py-4 text-gray-500">No purchase orders found.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
+<h1 class="text-3xl font-bold mb-6 text-primary">My Deliveries</h1>
+
+<div class="border border-gray-600 rounded-xl bg-surface/50 p-6 max-w-7xl mx-auto">
+<form method="get" class="flex flex-wrap gap-6 items-center justify-start mb-6 max-w-7xl mx-auto">
+
+  <!-- Status Filter -->
+  <div class="flex items-center gap-2">
+    <label for="status" class="text-secondary font-medium mr-2 whitespace-nowrap">Filter by Status:</label>
+    <select name="status" id="status"
+            class="px-3 py-2 rounded border border-muted bg-surface text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+            onchange="this.form.submit()">
+      <option value="" {% if not status_filter %}selected{% endif %}>All Statuses</option>
+      <option value="For Delivery" {% if status_filter == 'For Delivery' %}selected{% endif %}>For Delivery</option>
+      <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+    </select>
+  </div>
+
+  <!-- Project Filter -->
+  <div class="flex items-center gap-2 min-w-[220px]">
+    <label for="project" class="text-secondary font-medium mr-2 whitespace-nowrap">Filter by Project:</label>
+    <select name="project" id="project"
+            class="px-3 py-2 rounded border border-muted bg-surface text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+            onchange="this.form.submit()">
+      <option value="" {% if not project_filter %}selected{% endif %}>All Projects</option>
+      {% for project_id, project_name in all_projects %}
+        <option value="{{ project_id }}" {% if project_filter == project_id|stringformat:"s" %}selected{% endif %}>{{ project_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+</form>
+
+  {% if purchase_orders %}
+    <table class="w-full text-sm border border-muted rounded overflow-hidden">
+      <thead class="bg-muted/20 text-left">
+        <tr>
+          <th class="px-3 py-2 border-b border-muted">Offer ID</th>
+          <th class="px-3 py-2 border-b border-muted">Estimated Delivery Date</th>
+          <th class="px-3 py-2 border-b border-muted">Project</th>  <!-- New Project Column -->
+          <th class="px-3 py-2 border-b border-muted">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for po in purchase_orders %}
+          <tr>
+            <td class="px-3 py-2 border-b border-muted">{{ po.offerpurchaseorder.offer.offer_id }}</td>
+            <td class="px-3 py-2 border-b border-muted">{{ po.delivery_date|date:"Y-m-d H:i" }}</td>
+            <td class="px-3 py-2 border-b border-muted">
+              {{ po.offerpurchaseorder.offer.offerrequestdetail.request_detail.pr.project.project_name }} -
+              {{ po.offerpurchaseorder.offer.offerrequestdetail.request_detail.pr.project.project_location }}
+            </td>
+            <td class="px-3 py-2 border-b border-muted">
+              {% if po.po_status == 'Completed' %}
+                <span class="text-green-600 font-medium">{{ po.po_status }}</span>
+              {% else %}
+                <span class="text-yellow-600 font-medium">{{ po.po_status }}</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="text-center py-5 text-secondary italic">No purchase orders found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
+  {% else %}
+    <p class="text-center text-secondary italic">No purchase orders found.</p>
+  {% endif %}
+
 </div>
 {% endblock %}

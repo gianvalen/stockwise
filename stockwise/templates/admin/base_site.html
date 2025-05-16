@@ -1,0 +1,29 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block extrastyle %}
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            surface: '#2E2E2E',
+            primary: '#D9B650',
+            secondary: '#FFFFFF',
+            muted: '#CFC497',
+            overlay: 'rgba(46, 46, 46, 0.75)',
+          }
+        }
+      }
+    }
+  </script>
+{% endblock %}
+
+{% block branding %}
+  <h1 class="text-2xl font-bold text-primary">🏗️ StockWise Admin</h1>
+{% endblock %}

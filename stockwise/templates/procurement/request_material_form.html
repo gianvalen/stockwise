@@ -1,115 +1,77 @@
-  {% extends "base.html" %}
+{% extends "base.html" %}
 
-  {% block title %}Request Material for {{ project.project_name }}{% endblock %}
+{% block title %}Request Material for {{ project.project_name }}{% endblock %}
 
-  {% block content %}
-  <section class="bg-surface/80 rounded-xl shadow-lg p-6 sm:p-10 border border-primary max-w-3xl mx-auto">
-    <h2 class="text-2xl sm:text-3xl font-bold text-primary mb-6">Request Materials for {{ project.project_name }}</h2>
+{% block content %}
+<section class="bg-surface/80 rounded-xl shadow-lg p-6 sm:p-10 border border-primary max-w-3xl mx-auto">
+  <h2 class="text-2xl sm:text-3xl font-bold text-primary mb-6">Request Materials for {{ project.project_name }}</h2>
 
-    <form method="post" id="material-form" class="space-y-6">
-      {% csrf_token %}
-      {{ formset.management_form }}
+  <form method="post" id="material-form" class="space-y-6">
+    {% csrf_token %}
+    {{ formset.management_form }}
 
-      <div id="formset-container" class="space-y-6">
-        {% for form in formset %}
-          <div class="formset-form border-b border-muted pb-4 relative grid grid-cols-12 items-center gap-x-4">
-            <!-- Material Type -->
-            <div class="col-span-4">
-              <label class="block text-sm font-medium text-secondary mb-1" for="material-type-{{ forloop.counter0 }}">
-                Material Type
-              </label>
-              <select id="material-type-{{ forloop.counter0 }}" class="material-type-select w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary">
+    <div id="formset-container" class="space-y-6">
+      {% for form in formset %}
+        <div class="formset-form border-b border-muted pb-4 relative grid grid-cols-12 items-center gap-x-4">
+          <!-- Material Type -->
+          <div class="col-span-4">
+            <label class="block text-sm font-medium text-secondary mb-1" for="material-type-{{ forloop.counter0 }}">
+              Material Type
+            </label>
+            <select id="material-type-{{ forloop.counter0 }}" class="material-type-select w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary">
+              {% for group_label, choices in grouped_choices %}
+                <option value="{{ group_label }}"
+                  {% for val, label in choices %}
+                    {% if form.material.value|stringformat:"s" == val|stringformat:"s" %}
+                      {% if group_label == group_label %}selected{% endif %}
+                    {% endif %}
+                  {% endfor %}
+                >
+                  {{ group_label }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Material -->
+          <div class="col-span-4">
+            <label for="{{ form.material.id_for_label }}" class="block text-sm font-medium text-secondary mb-1">
+              {{ form.material.label }}
+            </label>
+            <select 
+                name="{{ form.material.html_name }}" 
+                id="{{ form.material.id_for_label }}" 
+                class="material-select w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+              >
                 {% for group_label, choices in grouped_choices %}
-                  <option value="{{ group_label }}"
-                    {% for val, label in choices %}
-                      {% if form.material.value|stringformat:"s" == val|stringformat:"s" %}
-                        {% if group_label == group_label %}selected{% endif %}
-                      {% endif %}
-                    {% endfor %}
-                  >
-                    {{ group_label }}
-                  </option>
+                  {% for val, label in choices %}
+                    <option value="{{ val }}" data-type="{{ group_label }}"
+                      {% if form.material.value|stringformat:"s" == val|stringformat:"s" %}selected{% endif %}
+                    >
+                      {{ label }}
+                    </option>
+                  {% endfor %}
                 {% endfor %}
               </select>
-            </div>
-
-            <!-- Material -->
-            <div class="col-span-4">
-              <label for="{{ form.material.id_for_label }}" class="block text-sm font-medium text-secondary mb-1">
-                {{ form.material.label }}
-              </label>
-                <select 
-                    name="{{ form.material.html_name }}" 
-                    id="{{ form.material.id_for_label }}" 
-                    class="material-select w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    {% for group_label, choices in grouped_choices %}
-                      {% for val, label in choices %}
-                        <option value="{{ val }}" data-type="{{ group_label }}"
-                          {% if form.material.value|stringformat:"s" == val|stringformat:"s" %}selected{% endif %}
-                        >
-                          {{ label }}
-                        </option>
-                      {% endfor %}
-                    {% endfor %}
-                  </select>
-              {% for error in form.material.errors %}
-                <p class="text-sm text-red-400">{{ error }}</p>
-              {% endfor %}
-            </div>
-
-            <!-- Quantity -->
-            <div class="col-span-3">
-              <label for="{{ form.quantity.id_for_label }}" class="block text-sm font-medium text-secondary mb-1">
-                {{ form.quantity.label }}
-              </label>
-              <input type="number" name="{{ form.quantity.html_name }}" id="{{ form.quantity.id_for_label }}"
-                    value="{{ form.quantity.value|default_if_none:'' }}"
-                    class="w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary" />
-              {% for error in form.quantity.errors %}
-                <p class="text-sm text-red-400">{{ error }}</p>
-              {% endfor %}
-            </div>
-
-            <!-- Delete Button -->
-            <div class="col-span-1 flex justify-end">
-              <button type="button" class="remove-form text-white-600 hover:text-red-800 mt-6" title="Remove this material" style="background:none; border:none; cursor:pointer;">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7L5 7M6 7v12a2 2 0 002 2h8a2 2 0 002-2V7M10 11v6M14 11v6M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2" />
-                </svg>
-              </button>
-            </div>
+            {% for error in form.material.errors %}
+              <p class="text-sm text-red-400">{{ error }}</p>
+            {% endfor %}
           </div>
-        {% endfor %}
-      </div>
 
-      <!-- Empty Form Template -->
-      <template id="empty-form-template">
-        <div class="formset-form border-b border-muted pb-4 relative grid grid-cols-12 items-center gap-x-4">
-          <div class="col-span-4">
-            <label class="block text-sm font-medium text-secondary mb-1">Material Type</label>
-            <select name="form-__prefix__-type" class="material-type-select w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary" id="id_form-__prefix__-type">
-              {% for group_label, choices in grouped_choices %}
-                <option value="{{ group_label }}">{{ group_label }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="col-span-4">
-            <label class="block text-sm font-medium text-secondary mb-1">Material</label>
-            <select name="form-__prefix__-material" class="material-select w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary" id="id_form-__prefix__-material">
-              {% for group_label, choices in grouped_choices %}
-                <optgroup label="{{ group_label }}">
-                  {% for val, label in choices %}
-                    <option value="{{ val }}" data-type="{{ group_label }}">{{ label }}</option>
-                  {% endfor %}
-                </optgroup>
-              {% endfor %}
-            </select>
-          </div>
+          <!-- Quantity -->
           <div class="col-span-3">
-            <label class="block text-sm font-medium text-secondary mb-1">Quantity</label>
-            <input type="number" name="form-__prefix__-quantity" class="w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary" id="id_form-__prefix__-quantity" />
+            <label for="{{ form.quantity.id_for_label }}" class="block text-sm font-medium text-secondary mb-1">
+              {{ form.quantity.label }}
+            </label>
+            <input type="number" name="{{ form.quantity.html_name }}" id="{{ form.quantity.id_for_label }}"
+                  value="{{ form.quantity.value|default_if_none:'' }}"
+                  class="w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary" />
+            {% for error in form.quantity.errors %}
+              <p class="text-sm text-red-400">{{ error }}</p>
+            {% endfor %}
           </div>
+
+          <!-- Delete Button -->
           <div class="col-span-1 flex justify-end">
             <button type="button" class="remove-form text-white-600 hover:text-red-800 mt-6" title="Remove this material" style="background:none; border:none; cursor:pointer;">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -118,98 +80,135 @@
             </button>
           </div>
         </div>
-      </template>
+      {% endfor %}
+    </div>
 
-      <div>
-        <button type="button" id="add-form-btn" class="mt-2 text-sm text-primary hover:underline transition">+ Add another material</button>
-      </div>
-
-      <div class="flex flex-col sm:flex-row gap-4 mt-6">
-        <button type="submit" class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full sm:w-auto">
-          Submit Request
-        </button>
-        <a href="{% url 'procurement:projects_list' %}">
-          <button type="button" class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full sm:w-auto">
-            ← Back to Projects
+    <!-- Empty Form Template -->
+    <template id="empty-form-template">
+      <div class="formset-form border-b border-muted pb-4 relative grid grid-cols-12 items-center gap-x-4">
+        <div class="col-span-4">
+          <label class="block text-sm font-medium text-secondary mb-1">Material Type</label>
+          <select name="form-__prefix__-type" class="material-type-select w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary" id="id_form-__prefix__-type">
+            {% for group_label, choices in grouped_choices %}
+              <option value="{{ group_label }}">{{ group_label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-span-4">
+          <label class="block text-sm font-medium text-secondary mb-1">Material</label>
+          <select name="form-__prefix__-material" class="material-select w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary" id="id_form-__prefix__-material">
+            {# Removed optgroup, flat list of options #}
+            {% for group_label, choices in grouped_choices %}
+              {% for val, label in choices %}
+                <option value="{{ val }}" data-type="{{ group_label }}">{{ label }}</option>
+              {% endfor %}
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-span-3">
+          <label class="block text-sm font-medium text-secondary mb-1">Quantity</label>
+          <input type="number" name="form-__prefix__-quantity" class="w-full px-4 py-2 rounded-md bg-surface border border-muted text-secondary focus:outline-none focus:ring-2 focus:ring-primary" id="id_form-__prefix__-quantity" />
+        </div>
+        <div class="col-span-1 flex justify-end">
+          <button type="button" class="remove-form text-white-600 hover:text-red-800 mt-6" title="Remove this material" style="background:none; border:none; cursor:pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7L5 7M6 7v12a2 2 0 002 2h8a2 2 0 002-2V7M10 11v6M14 11v6M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2" />
+            </svg>
           </button>
-        </a>
+        </div>
       </div>
-    </form>
-  </section>
+    </template>
 
-  <script>
-    const formsetContainer = document.getElementById('formset-container');
-    const addFormBtn = document.getElementById('add-form-btn');
-    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
-    const template = document.getElementById('empty-form-template');
+    <div>
+      <button type="button" id="add-form-btn" class="mt-2 text-sm text-primary hover:underline transition">+ Add another material</button>
+    </div>
 
-    function filterMaterialOptions(materialSelect, allowedType) {
-      const options = materialSelect.querySelectorAll('option');
-      options.forEach(option => {
-        if (allowedType === 'all' || option.dataset.type === allowedType) {
-          option.style.display = '';
-        } else {
-          option.style.display = 'none';
-          if (option.selected) option.selected = false;
-        }
-      });
-      if (![...options].some(o => o.selected && o.style.display !== 'none')) {
-        for (const opt of options) {
-          if (opt.style.display !== 'none') {
-            opt.selected = true;
-            break;
-          }
+    <div class="flex flex-col sm:flex-row gap-4 mt-6">
+      <button type="submit" class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full sm:w-auto">
+        Submit Request
+      </button>
+      <a href="{% url 'procurement:projects_list' %}">
+        <button type="button" class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition w-full sm:w-auto">
+          ← Back to Projects
+        </button>
+      </a>
+    </div>
+  </form>
+</section>
+
+<script>
+  const formsetContainer = document.getElementById('formset-container');
+  const addFormBtn = document.getElementById('add-form-btn');
+  const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+  const template = document.getElementById('empty-form-template');
+
+  function filterMaterialOptions(materialSelect, allowedType) {
+    const options = materialSelect.querySelectorAll('option');
+    options.forEach(option => {
+      if (allowedType === 'all' || option.dataset.type === allowedType) {
+        option.style.display = '';
+      } else {
+        option.style.display = 'none';
+        if (option.selected) option.selected = false;
+      }
+    });
+    if (![...options].some(o => o.selected && o.style.display !== 'none')) {
+      for (const opt of options) {
+        if (opt.style.display !== 'none') {
+          opt.selected = true;
+          break;
         }
       }
     }
+  }
 
-    function handleRowMaterialTypeChange(materialTypeSelect) {
-      const formDiv = materialTypeSelect.closest('.formset-form');
-      const materialSelect = formDiv.querySelector('.material-select');
-      filterMaterialOptions(materialSelect, materialTypeSelect.value);
-    }
+  function handleRowMaterialTypeChange(materialTypeSelect) {
+    const formDiv = materialTypeSelect.closest('.formset-form');
+    const materialSelect = formDiv.querySelector('.material-select');
+    filterMaterialOptions(materialSelect, materialTypeSelect.value);
+  }
 
-    function attachMaterialTypeListeners() {
-      const materialTypeSelects = formsetContainer.querySelectorAll('.material-type-select');
-      materialTypeSelects.forEach(select => {
-        select.addEventListener('change', e => {
-          handleRowMaterialTypeChange(e.target);
-        });
+  function attachMaterialTypeListeners() {
+    const materialTypeSelects = formsetContainer.querySelectorAll('.material-type-select');
+    materialTypeSelects.forEach(select => {
+      select.addEventListener('change', e => {
+        handleRowMaterialTypeChange(e.target);
       });
-    }
-
-    function attachRemoveListeners() {
-      const removeButtons = formsetContainer.querySelectorAll('.remove-form');
-      removeButtons.forEach(btn => {
-        btn.onclick = () => {
-          const formDiv = btn.closest('.formset-form');
-          formDiv.remove();
-        };
-      });
-    }
-
-    addFormBtn.addEventListener('click', () => {
-      const currentFormCount = parseInt(totalForms.value);
-      const newFormHtml = template.innerHTML.replace(/__prefix__/g, currentFormCount);
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = newFormHtml;
-      const newForm = tempDiv.firstElementChild;
-
-      formsetContainer.appendChild(newForm);
-      totalForms.value = currentFormCount + 1;
-
-      attachMaterialTypeListeners();
-      attachRemoveListeners();
-
-      const mtSelect = newForm.querySelector('.material-type-select');
-      if (mtSelect) handleRowMaterialTypeChange(mtSelect);
     });
+  }
+
+  function attachRemoveListeners() {
+    const removeButtons = formsetContainer.querySelectorAll('.remove-form');
+    removeButtons.forEach(btn => {
+      btn.onclick = () => {
+        const formDiv = btn.closest('.formset-form');
+        formDiv.remove();
+      };
+    });
+  }
+
+  addFormBtn.addEventListener('click', () => {
+    const currentFormCount = parseInt(totalForms.value);
+    const newFormHtml = template.innerHTML.replace(/__prefix__/g, currentFormCount);
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = newFormHtml;
+    const newForm = tempDiv.firstElementChild;
+
+    formsetContainer.appendChild(newForm);
+    totalForms.value = currentFormCount + 1;
 
     attachMaterialTypeListeners();
     attachRemoveListeners();
-    formsetContainer.querySelectorAll('.formset-form').forEach(formDiv => {
-      const mtSelect = formDiv.querySelector('.material-type-select');
-      handleRowMaterialTypeChange(mtSelect);
-    });
-  </script>
-  {% endblock %}
+
+    const mtSelect = newForm.querySelector('.material-type-select');
+    if (mtSelect) handleRowMaterialTypeChange(mtSelect);
+  });
+
+  attachMaterialTypeListeners();
+  attachRemoveListeners();
+  formsetContainer.querySelectorAll('.formset-form').forEach(formDiv => {
+    const mtSelect = formDiv.querySelector('.material-type-select');
+    handleRowMaterialTypeChange(mtSelect);
+  });
+</script>
+{% endblock %}

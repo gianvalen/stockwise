@@ -44,7 +44,6 @@
           <th class="px-3 py-2 border-b border-muted">Offer ID</th>
           <th class="px-3 py-2 border-b border-muted">Project</th>
           <th class="px-3 py-2 border-b border-muted">Offer Date</th>
-          <th class="px-3 py-2 border-b border-muted">Unit Price</th>
           <th class="px-3 py-2 border-b border-muted">Total Quantity</th>
           <th class="px-3 py-2 border-b border-muted">Total Price</th>
           <th class="px-3 py-2 border-b border-muted">Status</th>
@@ -57,7 +56,6 @@
             <td class="px-3 py-2 border-b border-muted">{{ offer.offer_id }}</td>
             <td class="px-3 py-2 border-b border-muted">{{ offer.offerrequestdetail.request_detail.pr.project.project_name }}</td>
             <td class="px-3 py-2 border-b border-muted">{{ offer.offer_date|date:"Y-m-d H:i" }}</td>
-            <td class="px-3 py-2 border-b border-muted">₱ {{ offer.unit_price }}</td>
             <td class="px-3 py-2 border-b border-muted">{{ offer.total_quantity }}</td>
             <td class="px-3 py-2 border-b border-muted">
               {% if offer.quantity_per_price > 0 %}
@@ -74,15 +72,15 @@
                   {% csrf_token %}
                   <input type="hidden" name="offer_id" value="{{ offer.offer_id }}">
                   <input type="hidden" name="action" value="accept">
-                  <button type="submit" class="bg-primary text-surface px-3 py-1 rounded hover:bg-primary/90">
-                    Approve
+                  <button type="submit" class="bg-primary text-surface px-3 py-1 rounded hover:bg-green-600 transition font-semibold">
+                    Accept
                   </button>
                 </form>
                 <form method="post" class="inline-block">
                   {% csrf_token %}
                   <input type="hidden" name="offer_id" value="{{ offer.offer_id }}">
                   <input type="hidden" name="action" value="reject">
-                  <button type="submit" class="bg-gray-700 text-secondary px-3 py-1 rounded hover:bg-red-600">
+                  <button type="submit" class="bg-gray-700 text-secondary px-3 py-1 rounded hover:bg-red-600 transition font-semibold">
                     Reject
                   </button>
                 </form>
