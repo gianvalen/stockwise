@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from stock_management.models import PurchaseRequest, RequestDetail, ProjectInventory, InventoryMaterial, Project, Material, Offer
+from stock_management.models import PurchaseRequest, RequestDetail, ProjectInventory, InventoryMaterial, Project, Material, Offer, PurchaseOrder, OfferPurchaseOrder, Inventory
 from .forms import MaterialTransferForm
 from django.db import transaction
+from django.utils import timezone
+
 
 def home_manager(request):
     return render(request, 'project_management/home_manager.html')
@@ -139,10 +141,32 @@ def pending_offers_proj(request):
 
         if action == 'approve':
             offer.offer_status_proj = 'Accepted'
+            offer.save()
+
+            # Create PurchaseOrder only if not already created for this offer
+            existing_po = OfferPurchaseOrder.objects.filter(offer=offer).first()
+            if not existing_po:
+                po_id = generate_po_id()
+                # Example: set delivery_date to 7 days from now
+                delivery_date = timezone.now() + timezone.timedelta(days=7)
+
+                po = PurchaseOrder.objects.create(
+                    po_id=po_id,
+                    delivery_date=delivery_date,
+                    po_status='For Delivery',
+                )
+
+                OfferPurchaseOrder.objects.create(
+                    po=po,
+                    offer=offer,
+                )
+
+            messages.success(request, f"Offer {offer_id} has been approved and Purchase Order {po_id} created.")
+
         elif action == 'reject':
             offer.offer_status_proj = 'Rejected'
-
-        offer.save()
+            offer.save()
+            messages.warning(request, f"Offer {offer_id} has been rejected.")
 
         query_params = []
         if status_filter:
@@ -169,3 +193,68 @@ def pending_offers_proj(request):
     }
 
     return render(request, 'pending_offers_proj.html', context)
+
+def generate_po_id():
+    last_po = PurchaseOrder.objects.order_by('-po_id').first()
+    if last_po:
+        num = int(last_po.po_id[2:]) + 1
+    else:
+        num = 1
+    return f"PO{num:03d}"  # Format: PO001, PO002, etc.
+
+def purchase_orders_list(request):
+    if request.method == 'POST':
+        po_id = request.POST.get('po_id')
+        try:
+            with transaction.atomic():
+                po = PurchaseOrder.objects.select_for_update().get(po_id=po_id)
+
+                if po.po_status == 'Completed':
+                    messages.info(request, "This order is already completed.")
+                else:
+                    po.po_status = 'Completed'
+                    po.save()
+
+                    opo = OfferPurchaseOrder.objects.select_related(
+                        'offer',
+                        'offer__offerrequestdetail',
+                        'offer__offerrequestdetail__request_detail',
+                        'offer__offerrequestdetail__request_detail__material'
+                    ).get(po=po)
+
+                    offer = opo.offer
+                    material = offer.offerrequestdetail.request_detail.material
+
+                    inventory_materials = InventoryMaterial.objects.filter(material=material)
+
+                    if not inventory_materials.exists():
+                        inventory = Inventory.objects.first()
+                        if inventory is None:
+                            messages.error(request, "No inventory exists to create InventoryMaterial entry.")
+                            return redirect('project_management:purchase_orders_list')
+
+                        new_im_id = generate_new_im_id()
+
+                        InventoryMaterial.objects.create(
+                            im_id=new_im_id,
+                            material=material,
+                            inventory=inventory,
+                            quantity=offer.total_quantity,
+                        )
+                        messages.success(request, f"InventoryMaterial created for {material.material_name} with quantity {offer.total_quantity}.")
+                    else:
+                        for im in inventory_materials:
+                            im.quantity += offer.total_quantity
+                            im.save()
+
+                    messages.success(request, f"Purchase Order {po.po_id} completed and inventory updated.")
+
+        except PurchaseOrder.DoesNotExist:
+            messages.error(request, "Purchase order not found.")
+        except OfferPurchaseOrder.DoesNotExist:
+            messages.error(request, "OfferPurchaseOrder not found for this PO.")
+
+        return redirect('project_management:purchase_orders_list')
+
+    purchase_orders = PurchaseOrder.objects.all().order_by('delivery_date')
+    return render(request, 'purchase_orders_list.html', {'purchase_orders': purchase_orders})
