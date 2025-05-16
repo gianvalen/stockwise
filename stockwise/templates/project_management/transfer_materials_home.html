@@ -29,21 +29,33 @@
         <h2 class="text-xl font-semibold mb-4 text-primary">Project: {{ entry.project.project_name }}</h2>
 
         {% if entry.materials %}
-          <ul class="space-y-3">
-            {% for im in entry.materials %}
-              {% if im.quantity > 0 %}
-                <li class="flex justify-between items-center gap-4 bg-surface/40 rounded px-4 py-2 hover:bg-primary/20 transition">
-                  <span class="text-sm md:text-base text-secondary break-words">
-                    {{ im.material.material_name }} - {{ im.quantity }} ({{ im.material.unit }})
-                  </span>
-                  <a href="{% url 'project_management:transfer_material_form' entry.project.project_id im.material.material_id %}"
-                    class="text-primary font-semibold hover:underline hover:text-yellow-400 whitespace-nowrap">
-                    Transfer
-                  </a>
-                </li>
-              {% endif %}
-            {% endfor %}
-          </ul>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm border border-muted rounded-lg">
+              <thead class="bg-muted/20 text-left">
+                <tr>
+                  <th class="px-3 py-2 border-b border-muted">Material</th>
+                  <th class="px-3 py-2 border-b border-muted">Quantity</th>
+                  <th class="px-3 py-2 border-b border-muted">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for im in entry.materials %}
+                  {% if im.quantity > 0 %}
+                    <tr class="hover:bg-primary/20 transition">
+                      <td class="px-3 py-2 border-b border-muted break-words">{{ im.material.material_name }}</td>
+                      <td class="px-3 py-2 border-b border-muted">{{ im.quantity }} {{ im.material.unit }}</td>
+                      <td class="px-3 py-2 border-b border-muted">
+                        <a href="{% url 'project_management:transfer_material_form' entry.project.project_id im.material.material_id %}"
+                           class="text-primary font-semibold hover:underline hover:text-yellow-400 whitespace-nowrap">
+                          Transfer
+                        </a>
+                      </td>
+                    </tr>
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         {% else %}
           <p class="text-muted italic">No materials found for this project.</p>
         {% endif %}
