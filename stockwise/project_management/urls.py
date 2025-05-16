@@ -7,6 +7,5 @@ urlpatterns = [
     path('home/', home_manager, name='home_manager'),
     path('pending-requests/', pending_requests, name='pending_requests'),
     path('materials/transfer/', transfer_materials_home, name='transfer_materials'),
-    path('materials/transfer/<project_id>/<material_id>/', transfer_material, name='transfer_material_form')
-
+    path('materials/transfer/<project_id>/<material_id>/', transfer_material, name='transfer_material_form'),
 ]

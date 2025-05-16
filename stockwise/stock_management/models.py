@@ -70,12 +70,19 @@ class Material(models.Model):
 
 
 class Offer(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+    ]
+
     offer_id = models.CharField(primary_key=True, max_length=5)
     offer_date = models.DateTimeField()
     unit_price = models.IntegerField()
     quantity_per_price = models.IntegerField()
     total_quantity = models.IntegerField()
-    offer_status = models.CharField(max_length=255)
+    offer_status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='Pending')
+    offer_status_proj = models.CharField(max_length=255, choices=STATUS_CHOICES, default='Pending')
 
     class Meta:
         # managed = False

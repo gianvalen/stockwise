@@ -2,7 +2,7 @@ from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from user_management.decorators import user_type_required
-from stock_management.models import PurchaseRequest, RequestDetail
+from stock_management.models import PurchaseRequest, RequestDetail, OfferRequestDetail
 from .forms import OfferForm
 
 @login_required
@@ -46,6 +46,11 @@ def offer_material(request, pr_id, material_id):
             offer.offer_status = "Pending"
             offer.save()
 
+            OfferRequestDetail.objects.create(
+                offer=offer,
+                request_detail=request_detail
+            )
+
             return redirect('supply:requests_detail', pr_id=pr_id)
     else:
         form = OfferForm()
@@ -58,6 +63,7 @@ def offer_material(request, pr_id, material_id):
     }
 
     return render(request, 'offer_material.html', context)
+
 
 import random
 import string
