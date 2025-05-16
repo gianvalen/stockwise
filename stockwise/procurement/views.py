@@ -5,6 +5,7 @@ from user_management.decorators import user_type_required
 from stock_management.models import Project, ProjectInventory, InventoryMaterial, PurchaseRequest, RequestDetail, Material, Offer
 from django.utils import timezone
 from .forms import RequestMaterialForm
+from django.db.models import Case, When, BooleanField, Value, F
 
 from django.forms import formset_factory
 import uuid
@@ -26,14 +27,22 @@ def projects_list(request):
 def project_detail(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
     project_inventory = get_object_or_404(ProjectInventory, project=project)
-    materials_in_inventory = InventoryMaterial.objects.filter(inventory=project_inventory.inventory).select_related('material')
+    
+    materials_in_inventory = InventoryMaterial.objects.filter(
+        inventory=project_inventory.inventory
+    ).select_related('material').annotate(
+        is_low_stock=Case(
+            When(quantity__lte=F('material__low_stock_threshold'), then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField()
+        )
+    )
 
     context = {
         'project': project,
         'materials_in_inventory': materials_in_inventory,
     }
     return render(request, 'project_detail.html', context)
-
 def generate_pr_id():
     while True:
         pr_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
@@ -93,13 +102,13 @@ def request_material(request, project_id):
     })
 
 def pending_offers(request):
-    status_filter = request.GET.get('status')  # Get status filter from query params
+    status_filter = request.GET.get('status')
+    project_filter = request.GET.get('project')  # ← Add this line
 
     # Handle Approve/Reject actions
     if request.method == 'POST':
         offer_id = request.POST.get('offer_id')
-        action = request.POST.get('action')  # 'accept' or 'reject'
-
+        action = request.POST.get('action')
         offer = get_object_or_404(Offer, offer_id=offer_id)
 
         if action == 'accept':
@@ -112,20 +121,58 @@ def pending_offers(request):
         offer.save()
 
         # Preserve filters on redirect
-        query_params = f"?status={status_filter}" if status_filter else ""
-        return redirect(f"{request.path}{query_params}")
+        query_params = []
+        if status_filter:
+            query_params.append(f"status={status_filter}")
+        if project_filter:
+            query_params.append(f"project={project_filter}")
+        query_string = f"?{'&'.join(query_params)}" if query_params else ""
+        return redirect(f"{request.path}{query_string}")
 
-    # Filter offers by status if provided
+    # Base queryset
     offers = Offer.objects.all()
+
+    # Apply filters
     if status_filter:
         offers = offers.filter(offer_status=status_filter)
+    if project_filter:
+        offers = offers.filter(
+            offerrequestdetail__request_detail__pr__project__project_id=project_filter
+        )
+
+    # Get all projects for the dropdown
+    all_projects = Project.objects.all()
 
     context = {
         'offers': offers,
         'status_filter': status_filter,
+        'project_filter': project_filter,
+        'all_projects': all_projects,
     }
     return render(request, 'pending_offers_proc.html', context)
 
+
 def my_requests(request):
+    status_filter = request.GET.get('status')
+    project_id_filter = request.GET.get('project')
+
+    # Base queryset
     user_requests = PurchaseRequest.objects.filter(requested_by=request.user).order_by('-request_date')
-    return render(request, 'my_requests.html', {'requests': user_requests})
+
+    # Apply filters
+    if status_filter:
+        user_requests = user_requests.filter(request_status=status_filter)
+
+    if project_id_filter:
+        user_requests = user_requests.filter(project__project_id=project_id_filter)
+
+    # Extract unique projects
+    user_projects = (
+        Project.objects.filter(purchaserequest__requested_by=request.user)
+        .distinct()
+    )
+
+    return render(request, 'my_requests.html', {
+        'requests': user_requests,
+        'project_names': user_projects,  # Send full Project objects
+    })
