@@ -74,19 +74,76 @@ def generate_offer_id():
         if not Offer.objects.filter(offer_id=offer_id).exists():
             return offer_id
         
+@login_required
+@user_type_required('supplier')
 def my_offers(request):
     offers = Offer.objects.filter(offered_by=request.user).order_by('-offer_date')
-    return render(request, 'my_offers.html', {'offers': offers})
 
+    # Get filter params from GET
+    status_filter = request.GET.get('status', '')
+    project_filter = request.GET.get('project', '')
+
+    if status_filter:
+        offers = offers.filter(offer_status=status_filter)
+    
+    if project_filter:
+        offers = offers.filter(
+            offerrequestdetail__request_detail__pr__project__project_id=project_filter
+        )
+
+    # To show project filter dropdown options
+    all_projects = (
+        Offer.objects.filter(offered_by=request.user)
+        .values_list('offerrequestdetail__request_detail__pr__project__project_id',
+                     'offerrequestdetail__request_detail__pr__project__project_name')
+        .distinct()
+    )
+
+    context = {
+        'offers': offers,
+        'status_filter': status_filter,
+        'project_filter': project_filter,
+        'all_projects': all_projects,
+    }
+    return render(request, 'my_offers.html', context)
+
+@login_required
+@user_type_required('supplier')
 def purchase_order_tracker(request):
     user = request.user
 
-    # Get all PurchaseOrders where the Offer is created by current user
     purchase_orders = PurchaseOrder.objects.filter(
         offerpurchaseorder__offer__offered_by=user
     ).order_by('-delivery_date')
 
+    # Get filter params from GET
+    status_filter = request.GET.get('status', '')
+    project_filter = request.GET.get('project', '')
+
+    if status_filter:
+        purchase_orders = purchase_orders.filter(po_status=status_filter)
+
+    if project_filter:
+        purchase_orders = purchase_orders.filter(
+            offerpurchaseorder__offer__offerrequestdetail__request_detail__pr__project__project_id=project_filter
+        )
+
+    # Fetch distinct projects from current user's purchase orders for dropdown
+    all_projects = (
+        PurchaseOrder.objects.filter(
+            offerpurchaseorder__offer__offered_by=user
+        )
+        .values_list(
+            'offerpurchaseorder__offer__offerrequestdetail__request_detail__pr__project__project_id',
+            'offerpurchaseorder__offer__offerrequestdetail__request_detail__pr__project__project_name'
+        )
+        .distinct()
+    )
+
     context = {
         'purchase_orders': purchase_orders,
+        'status_filter': status_filter,
+        'project_filter': project_filter,
+        'all_projects': all_projects,
     }
     return render(request, 'purchase_order_tracker.html', context)
