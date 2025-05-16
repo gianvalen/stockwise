@@ -1,48 +1,103 @@
 {% extends 'base.html' %}
 
+{% load math_filters %}
+
 {% block title %}Pending Offers{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto p-6 bg-surface border border-primary rounded-xl shadow-md">
-  <h1 class="text-3xl font-bold mb-6 text-primary text-center">Pending Offers</h1>
+<h1 class="text-3xl font-bold mb-6 text-primary">Offers</h1>
 
-  <form method="get" class="mb-4 flex gap-2 items-center">
-    <select name="status" class="px-3 py-2 border border-muted rounded">
-      <option value="">All Status</option>
+<div class="border border-gray-600 rounded-xl bg-surface/50 p-6 space-y-6 max-w-7xl mx-auto">
+
+  <!-- Filter Controls -->
+  <form method="get" class="flex gap-4 flex-wrap mb-6 items-center">
+    <!-- Status Filter -->
+    <label for="status" class="text-secondary font-medium">Status:</label>
+    <select name="status" id="status"
+            class="px-3 py-2 rounded border border-muted bg-surface text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+            onchange="this.form.submit()">
+      <option value="" {% if not status_filter %}selected{% endif %}>All Statuses</option>
       <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
       <option value="Accepted" {% if status_filter == 'Accepted' %}selected{% endif %}>Accepted</option>
       <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
     </select>
-    <button type="submit" class="bg-primary text-surface font-semibold px-4 py-2 rounded">Filter</button>
+
+    <!-- Project Filter -->
+    <label for="project" class="text-secondary font-medium">Project:</label>
+    <select name="project" id="project"
+            class="px-3 py-2 rounded border border-muted bg-surface text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+            onchange="this.form.submit()">
+      <option value="" {% if not project_filter %}selected{% endif %}>All Projects</option>
+      {% for project in all_projects %}
+        <option value="{{ project.project_id }}" {% if project_filter == project.project_id %}selected{% endif %}>
+          {{ project.project_name }}
+        </option>
+      {% endfor %}
+    </select>
   </form>
 
-  <div class="space-y-4">
-    {% for offer in offers %}
-    <div class="border border-muted rounded-lg p-4 bg-surface flex justify-between items-center">
-      <div>
-        <p><strong>Offer ID:</strong> {{ offer.offer_id }}</p>
-        <p><strong>Date:</strong> {{ offer.offer_date }}</p>
-        <p><strong>Offered by:</strong> {{ offer.offered_by }}</p>
-        <p><strong>Status:</strong> {{ offer.offer_status }}</p>
-        <p><strong>Unit Price:</strong> {{ offer.unit_price }}</p>
-        <p><strong>Quantity per Price:</strong> {{ offer.quantity_per_price }}</p>
-        <p><strong>Total Quantity:</strong> {{ offer.total_quantity }}</p>
-      </div>
+  <!-- Offers Table -->
+  {% if offers %}
+    <table class="w-full text-sm border border-muted rounded overflow-hidden">
+      <thead class="bg-muted/20 text-left">
+        <tr>
+          <th class="px-3 py-2 border-b border-muted">Offer ID</th>
+          <th class="px-3 py-2 border-b border-muted">Project</th>
+          <th class="px-3 py-2 border-b border-muted">Offer Date</th>
+          <th class="px-3 py-2 border-b border-muted">Unit Price</th>
+          <th class="px-3 py-2 border-b border-muted">Total Quantity</th>
+          <th class="px-3 py-2 border-b border-muted">Total Price</th>
+          <th class="px-3 py-2 border-b border-muted">Status</th>
+          <th class="px-3 py-2 border-b border-muted">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for offer in offers %}
+          <tr>
+            <td class="px-3 py-2 border-b border-muted">{{ offer.offer_id }}</td>
+            <td class="px-3 py-2 border-b border-muted">{{ offer.offerrequestdetail.request_detail.pr.project.project_name }}</td>
+            <td class="px-3 py-2 border-b border-muted">{{ offer.offer_date|date:"Y-m-d H:i" }}</td>
+            <td class="px-3 py-2 border-b border-muted">₱ {{ offer.unit_price }}</td>
+            <td class="px-3 py-2 border-b border-muted">{{ offer.total_quantity }}</td>
+            <td class="px-3 py-2 border-b border-muted">
+              {% if offer.quantity_per_price > 0 %}
+                ₱ {{ offer.total_quantity|div:offer.quantity_per_price|mul:offer.unit_price|floatformat:2 }}
+              {% else %}
+                Invalid
+              {% endif %}
+            </td>
+            <td class="px-3 py-2 border-b border-muted">{{ offer.offer_status }}</td>
+            <td class="px-3 py-2 border-b border-muted">
+              {% if offer.offer_status == 'Pending' %}
+              <div class="flex flex-col sm:flex-row gap-2">
+                <form method="post" class="inline-block">
+                  {% csrf_token %}
+                  <input type="hidden" name="offer_id" value="{{ offer.offer_id }}">
+                  <input type="hidden" name="action" value="accept">
+                  <button type="submit" class="bg-primary text-surface px-3 py-1 rounded hover:bg-primary/90">
+                    Approve
+                  </button>
+                </form>
+                <form method="post" class="inline-block">
+                  {% csrf_token %}
+                  <input type="hidden" name="offer_id" value="{{ offer.offer_id }}">
+                  <input type="hidden" name="action" value="reject">
+                  <button type="submit" class="bg-gray-700 text-secondary px-3 py-1 rounded hover:bg-red-600">
+                    Reject
+                  </button>
+                </form>
+              </div>
+              {% else %}
+                <span class="italic text-secondary">Already {{ offer.offer_status }}</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-center text-secondary italic">No offers found for this filter.</p>
+  {% endif %}
 
-      {% if offer.offer_status == 'Pending' %}
-      <form method="post" class="flex flex-col gap-2">
-        {% csrf_token %}
-        <input type="hidden" name="offer_id" value="{{ offer.offer_id }}">
-        <button name="action" value="accept" class="bg-green-500 text-white font-semibold px-4 py-2 rounded hover:bg-green-600">Approve</button>
-        <button name="action" value="reject" class="bg-red-500 text-white font-semibold px-4 py-2 rounded hover:bg-red-600">Reject</button>
-      </form>
-      {% else %}
-      <p class="font-semibold text-muted">No actions available</p>
-      {% endif %}
-    </div>
-    {% empty %}
-    <p class="text-muted text-center">No offers found.</p>
-    {% endfor %}
-  </div>
 </div>
 {% endblock %}
