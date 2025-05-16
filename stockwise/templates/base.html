@@ -56,6 +56,10 @@
                         class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
                         Projects
                     </a>
+                    <a href="{% url 'project_management:purchase_orders_list' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                        Order Tracker
+                    </a>
                     <a href="{% url 'procurement:pending_offers' %}"
                         class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'pending_offers' %}text-primary font-bold{% endif %}">
                         Pending Offers
@@ -106,6 +110,10 @@
                     <a href="{% url 'procurement:projects_list' %}"
                         class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
                         Projects
+                    </a>
+                    <a href="{% url 'project_management:purchase_orders_list' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">
+                        Order Tracker
                     </a>
                     <a href="{% url 'project_management:transfer_materials' %}"
                         class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'transfer_materials' %}text-primary font-bold{% endif %}">

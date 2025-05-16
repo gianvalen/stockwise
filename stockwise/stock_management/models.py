@@ -134,9 +134,14 @@ class ProjectInventory(models.Model):
 
 
 class PurchaseOrder(models.Model):
+    STATUS_CHOICES = [
+        ('For Delivery', 'For Delivery'),
+        ('Completed', 'Completed'),
+    ]
+
     po_id = models.CharField(primary_key=True, max_length=5)
     delivery_date = models.DateTimeField()
-    po_status = models.CharField(max_length=255)
+    po_status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='For Delivery') 
 
     class Meta:
         # managed = False
