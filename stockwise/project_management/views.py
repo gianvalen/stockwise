@@ -128,3 +128,33 @@ def generate_new_im_id():
     else:
         new_id_num = 1
     return f"IM{new_id_num:03d}"
+
+def pending_offers_proj(request):
+    status_filter = request.GET.get('status', 'Accepted')  # Default to Accepted
+
+    if request.method == 'POST':
+        offer_id = request.POST.get('offer_id')
+        action = request.POST.get('action')
+
+        offer = get_object_or_404(Offer, offer_id=offer_id)
+
+        if action == 'approve':
+            offer.offer_status_proj = 'Accepted'
+            messages.success(request, f"Offer {offer_id} has been approved.")
+        elif action == 'reject':
+            offer.offer_status_proj = 'Rejected'
+            messages.warning(request, f"Offer {offer_id} has been rejected.")
+
+        offer.save()
+        return redirect('project_management:pending_offers_proj')
+
+    offers = Offer.objects.all()
+    if status_filter:
+        offers = offers.filter(offer_status=status_filter)
+
+    context = {
+        'offers': offers,
+        'status_filter': status_filter,
+    }
+
+    return render(request, 'pending_offers_proj.html', context)
