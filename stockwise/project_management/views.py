@@ -203,6 +203,9 @@ def generate_po_id():
     return f"PO{num:03d}"  # Format: PO001, PO002, etc.
 
 def purchase_orders_list(request):
+    status_filter = request.GET.get('status')
+    project_filter = request.GET.get('project')
+
     if request.method == 'POST':
         po_id = request.POST.get('po_id')
         try:
@@ -219,33 +222,33 @@ def purchase_orders_list(request):
                         'offer',
                         'offer__offerrequestdetail',
                         'offer__offerrequestdetail__request_detail',
-                        'offer__offerrequestdetail__request_detail__material'
+                        'offer__offerrequestdetail__request_detail__material',
+                        'offer__offerrequestdetail__request_detail__pr',
+                        'offer__offerrequestdetail__request_detail__pr__project'
                     ).get(po=po)
 
                     offer = opo.offer
                     material = offer.offerrequestdetail.request_detail.material
 
-                    inventory_materials = InventoryMaterial.objects.filter(material=material)
+                    # Get the project from the purchase order path
+                    project = offer.offerrequestdetail.request_detail.pr.project
 
-                    if not inventory_materials.exists():
-                        inventory = Inventory.objects.first()
-                        if inventory is None:
-                            messages.error(request, "No inventory exists to create InventoryMaterial entry.")
-                            return redirect('project_management:purchase_orders_list')
+                    try:
+                        project_inventory = ProjectInventory.objects.get(project=project)
+                    except ProjectInventory.DoesNotExist:
+                        messages.error(request, f"No inventory found for project {project.project_name}.")
+                        return redirect('project_management:purchase_orders_list')
 
-                        new_im_id = generate_new_im_id()
+                    inventory = project_inventory.inventory
 
-                        InventoryMaterial.objects.create(
-                            im_id=new_im_id,
-                            material=material,
-                            inventory=inventory,
-                            quantity=offer.total_quantity,
-                        )
-                        messages.success(request, f"InventoryMaterial created for {material.material_name} with quantity {offer.total_quantity}.")
-                    else:
-                        for im in inventory_materials:
-                            im.quantity += offer.total_quantity
-                            im.save()
+                    inventory_material, created = InventoryMaterial.objects.get_or_create(
+                        inventory=inventory,
+                        material=material,
+                        defaults={'im_id': generate_new_im_id(), 'quantity': 0}
+                    )
+
+                    inventory_material.quantity += offer.total_quantity
+                    inventory_material.save()
 
                     messages.success(request, f"Purchase Order {po.po_id} completed and inventory updated.")
 
@@ -254,7 +257,24 @@ def purchase_orders_list(request):
         except OfferPurchaseOrder.DoesNotExist:
             messages.error(request, "OfferPurchaseOrder not found for this PO.")
 
-        return redirect('project_management:purchase_orders_list')
+        return redirect(request.get_full_path())
 
-    purchase_orders = PurchaseOrder.objects.all().order_by('delivery_date')
-    return render(request, 'purchase_orders_list.html', {'purchase_orders': purchase_orders})
+    purchase_orders = PurchaseOrder.objects.all().order_by('delivery_date').select_related(
+        'offerpurchaseorder__offer__offerrequestdetail__request_detail__pr__project'
+    )
+
+    if status_filter:
+        purchase_orders = purchase_orders.filter(po_status=status_filter)
+    if project_filter:
+        purchase_orders = purchase_orders.filter(
+            offerpurchaseorder__offer__offerrequestdetail__request_detail__pr__project__project_id=project_filter
+        )
+
+    all_projects = Project.objects.all().order_by('project_name')
+
+    return render(request, 'purchase_orders_list.html', {
+        'purchase_orders': purchase_orders,
+        'status_filter': status_filter,
+        'project_filter': project_filter,
+        'all_projects': all_projects,
+    })
