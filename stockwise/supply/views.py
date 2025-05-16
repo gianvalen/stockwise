@@ -44,6 +44,7 @@ def offer_material(request, pr_id, material_id):
             offer.offer_id = generate_offer_id()
             offer.offer_date = timezone.now()
             offer.offer_status = "Pending"
+            offer.offered_by = request.user
             offer.save()
 
             OfferRequestDetail.objects.create(
