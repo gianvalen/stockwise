@@ -78,6 +78,14 @@
                         class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'home_supplier' %}text-primary font-bold{% endif %}">
                         Home
                     </a>
+                    <a href="{% url 'supply:my_offers' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'requests_list' %}text-primary font-bold{% endif %}">
+                        My Offers
+                    </a>
+                    <a href="{% url 'supply:purchase_order_tracker' %}"
+                        class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'requests_list' %}text-primary font-bold{% endif %}">
+                        Delivery Tracker
+                    </a>
                     <a href="{% url 'supply:requests_list' %}"
                         class="hover:text-primary transition px-2 py-1 {% if request.resolver_match.url_name == 'requests_list' %}text-primary font-bold{% endif %}">
                         Purchase Requests
