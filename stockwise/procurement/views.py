@@ -98,10 +98,12 @@ def request_material(request, project_id):
             )
 
             for form in formset:
-                detail = form.save(commit=False)
-                detail.pr = pr
-                detail.request_detail_id = str(uuid.uuid4()).replace('-', '')[:5]
-                detail.save()
+                if form.cleaned_data.get('material'):  # safer .get()
+                    detail = form.save(commit=False)
+                    detail.pr = pr
+                    detail.material = form.cleaned_data['material']
+                    detail.request_detail_id = str(uuid.uuid4()).replace('-', '')[:5]
+                    detail.save()
 
             return redirect('procurement:projects_list')
     else:
