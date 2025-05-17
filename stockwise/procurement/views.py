@@ -1,17 +1,28 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from user_management.decorators import user_type_required
-from stock_management.models import Project, ProjectInventory, InventoryMaterial, PurchaseRequest, RequestDetail, Material, Offer
-from django.utils import timezone
-from .forms import RequestMaterialForm
-from django.db.models import Case, When, BooleanField, Value, F
-
-from django.forms import formset_factory
-import uuid
+from collections import defaultdict
 import random
 import string
-from collections import defaultdict
+import uuid
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db.models import Case, When, BooleanField, Value, F
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+
+from stock_management.models import (
+    Project,
+    ProjectInventory,
+    InventoryMaterial,
+    PurchaseRequest,
+    RequestDetail,
+    Material,
+    Offer,
+)
+
+from user_management.decorators import user_type_required
+from .forms import RequestMaterialForm
+from django.forms import formset_factory
+
 
 @login_required
 @user_type_required('procurement')
