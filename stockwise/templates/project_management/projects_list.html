@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Projects List{% endblock %}
+
+{% block content %}
+<section class="bg-surface/80 rounded-xl shadow-lg p-6 sm:p-10 border border-primary">
+  <h2 class="text-2xl sm:text-3xl font-bold text-primary mb-6">All Projects</h2>
+
+  {% if projects %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for project in projects %}
+    <div class="bg-surface border border-muted rounded-lg shadow-md p-5 flex flex-col justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-secondary mb-1">{{ project.project_name }}</h3>
+        <p class="text-sm text-muted">{{ project.project_location }}</p>
+      </div>
+      <div class="mt-4">
+        <a href="{% url 'project_management:project_detail' project.project_id %}">
+          <button class="w-full bg-primary text-surface font-semibold px-4 py-2 rounded hover:bg-muted transition">
+            View Inventory
+          </button>
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="text-muted mt-4">No projects available.</p>
+  {% endif %}
+</section>
+
+  <div class="mt-10 text-center">
+    <a href="{% url 'project_management:home_manager' %}">
+      <button class="bg-primary text-surface font-semibold px-6 py-2 rounded hover:bg-muted transition">
+        ← Back to Home
+      </button>
+    </a>
+  </div>
+{% endblock %}
