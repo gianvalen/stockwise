@@ -30,13 +30,13 @@ def home_procurement(request):
     return render(request, 'home_procurement.html')
 
 @login_required
-@user_type_required('procurement', 'manager')
+@user_type_required('procurement')
 def projects_list(request):
     projects = Project.objects.all()
     return render(request, 'projects_list.html', {'projects': projects})
 
 @login_required
-@user_type_required('procurement', 'manager')
+@user_type_required('procurement')
 def project_detail(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
     project_inventory = get_object_or_404(ProjectInventory, project=project)

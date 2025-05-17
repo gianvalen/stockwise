@@ -38,38 +38,62 @@ def project_detail(request, project_id):
     # Get all InventoryMaterial entries for the inventory
     materials_in_inventory = InventoryMaterial.objects.filter(inventory=project_inventory.inventory).select_related('material')
 
+    # Build the report
+    report = []
+    for item in materials_in_inventory:
+        if item.initial_quantity is None:
+            item.initial_quantity = item.quantity
+            item.save()
+
+        total_used = item.initial_quantity - item.quantity
+
+        if item.initial_quantity > 0:
+            percentage_used = (total_used / item.initial_quantity) * 100
+        else:
+            percentage_used = 0
+
+        report.append({
+            'material_name': item.material.material_name,
+            'total_quantity': item.initial_quantity,
+            'current_quantity': item.quantity,
+            'total_used': total_used,
+            'percentage_used': round(percentage_used, 2),
+            'unit': item.material.unit,
+        })
+
     context = {
         'project': project,
-        'materials_in_inventory': materials_in_inventory,  # list of Material objects
+        'materials_in_inventory': materials_in_inventory,
+        'report': report,
     }
     return render(request, 'warehouse/project_detail.html', context)
 
 @login_required
 @user_type_required('warehouse')
 def update_material_quantity(request, project_id, material_id):
-    # Step 1: Get the project
     project = get_object_or_404(Project, project_id=project_id)
-
-    # Step 2: Get the related inventory through ProjectInventory
     project_inventory = get_object_or_404(ProjectInventory, project=project)
     inventory = project_inventory.inventory
-
-    # Step 3: Get the material and verify it's in that inventory
     inventory_material = get_object_or_404(InventoryMaterial, material__material_id=material_id, inventory=inventory)
-    material = inventory_material.material
 
-    # Step 4: Proceed with form handling
     if request.method == 'POST':
         form = UpdateMaterialForm(request.POST, instance=inventory_material)
         if form.is_valid():
-            form.save()
+            updated_material = form.save(commit=False)
+
+            # Save initial quantity only once
+            if updated_material.initial_quantity is None:
+                updated_material.initial_quantity = inventory_material.quantity
+
+            updated_material.save()
             return redirect('warehouse:project_detail', project_id=project.project_id)
     else:
         form = UpdateMaterialForm(instance=inventory_material)
 
-    return render(request, 'update_material.html', {
+    return render(request, 'warehouse/update_material.html', {
         'form': form,
-        'material': material,
+        'project': project,
+        'material': inventory_material.material,
     })
 
 @login_required
@@ -116,7 +140,7 @@ def purchase_orders_list(request):
                     inventory_material, created = InventoryMaterial.objects.get_or_create(
                         inventory=inventory,
                         material=material,
-                        defaults={'im_id': generate_new_im_id(), 'quantity': 0}
+                        defaults={'im_id': generate_new_im_id(), 'quantity': 0, 'initial_quantity': 0}
                     )
 
                     inventory_material.quantity += offer.total_quantity
@@ -151,11 +175,17 @@ def purchase_orders_list(request):
         'all_projects': all_projects,
     })
 
+from django.db.models import Max
+
 def generate_new_im_id():
-    last_im = InventoryMaterial.objects.order_by('-im_id').first()
-    if last_im:
-        last_id_num = int(last_im.im_id.strip('IM'))
-        new_id_num = last_id_num + 1
+    last_id = InventoryMaterial.objects.aggregate(max_id=Max('im_id'))['max_id']
+    
+    if last_id and last_id.startswith('IM'):
+        try:
+            last_num = int(last_id.strip('IM'))
+        except ValueError:
+            last_num = 0
     else:
-        new_id_num = 1
-    return f"IM{new_id_num:03d}"
+        last_num = 0
+
+    return f"IM{last_num + 1:03d}"
