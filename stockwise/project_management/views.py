@@ -1,4 +1,3 @@
-from django.contrib import messages
 from collections import defaultdict
 from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
@@ -46,21 +45,25 @@ def projects_list(request):
 @user_type_required('manager')
 def project_detail(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
-
-    # Get the ProjectInventory instance linked to this project
     project_inventory = get_object_or_404(ProjectInventory, project=project)
 
-    # Get all InventoryMaterial entries for the inventory
-    materials_in_inventory = InventoryMaterial.objects.filter(inventory=project_inventory.inventory).select_related('material')
+    materials_in_inventory = InventoryMaterial.objects.filter(
+        inventory=project_inventory.inventory
+    ).select_related('material').annotate(
+        is_low_stock=Case(
+            When(quantity__lte=F('material__low_stock_threshold'), then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField()
+        )
+    )
 
-    # Build the report
     report = []
     for item in materials_in_inventory:
         if item.initial_quantity is None:
             item.initial_quantity = item.quantity
             item.save()
 
-        total_used = item.initial_quantity - item.quantity
+        total_used = max((item.initial_quantity - item.quantity) - item.transferred_out, 0)
 
         if item.initial_quantity > 0:
             percentage_used = (total_used / item.initial_quantity) * 100
@@ -74,6 +77,7 @@ def project_detail(request, project_id):
             'total_used': total_used,
             'percentage_used': round(percentage_used, 2),
             'unit': item.material.unit,
+            'transferred_quantity': item.transferred_out or 0,
         })
 
     context = {
@@ -82,6 +86,7 @@ def project_detail(request, project_id):
         'report': report,
     }
     return render(request, 'project_management/project_detail.html', context)
+
 
 def generate_pr_id():
     while True:
@@ -217,7 +222,6 @@ def transfer_material(request, project_id, material_id):
     try:
         source_im = InventoryMaterial.objects.get(inventory=source_inventory, material=material)
     except InventoryMaterial.DoesNotExist:
-        messages.error(request, "Material not linked to source inventory.")
         return redirect('project_management:transfer_materials')
 
     if request.method == 'POST':
@@ -228,27 +232,29 @@ def transfer_material(request, project_id, material_id):
             destination_inventory = destination_project.projectinventory.inventory
 
             if source_im.quantity < quantity:
-                messages.error(request, "Not enough quantity in source inventory.")
-                return redirect('project_management:transfer_material_form', project_id=project_id, material_id=material_id)
+                form.add_error('quantity', "Not enough quantity in source inventory.")
+            else:
+                destination_im, created = InventoryMaterial.objects.get_or_create(
+                    inventory=destination_inventory,
+                    material=material,
+                    defaults={'im_id': generate_new_im_id(), 'quantity': 0, 'transferred_out': 0}
+                )
 
-            destination_im, created = InventoryMaterial.objects.get_or_create(
-                inventory=destination_inventory,
-                material=material,
-                defaults={'im_id': generate_new_im_id(), 'quantity': 0}
-            )
+                try:
+                    with transaction.atomic():
+                        # Deduct quantity from source
+                        source_im.quantity -= quantity
+                        # Increment transferred_out on source
+                        source_im.transferred_out += quantity
+                        source_im.save()
 
-            try:
-                with transaction.atomic():
-                    source_im.quantity -= quantity
-                    source_im.save()
+                        # Add quantity to destination
+                        destination_im.quantity += quantity
+                        destination_im.save()
 
-                    destination_im.quantity += quantity
-                    destination_im.save()
-
-                messages.success(request, f"Transferred {quantity} {material.unit} of {material.material_name} from {source_project.project_name} to {destination_project.project_name}.")
-                return redirect('project_management:transfer_materials')
-            except Exception as e:
-                messages.error(request, f"Transfer failed: {str(e)}")
+                    return redirect('project_management:transfer_materials')
+                except Exception as e:
+                    form.add_error(None, f"Transfer failed: {str(e)}")
     else:
         form = MaterialTransferForm()
 
@@ -302,12 +308,9 @@ def pending_offers_proj(request):
                     offer=offer,
                 )
 
-            messages.success(request, f"Offer {offer_id} has been approved and Purchase Order {po_id} created.")
-
         elif action == 'reject':
             offer.offer_status_proj = 'Rejected'
             offer.save()
-            messages.warning(request, f"Offer {offer_id} has been rejected.")
 
         query_params = []
         if status_filter:

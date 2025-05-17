@@ -44,10 +44,9 @@
           <th class="px-3 py-2 border-b border-muted">Offer ID</th>
           <th class="px-3 py-2 border-b border-muted">Project</th>
           <th class="px-3 py-2 border-b border-muted">Offer Date</th>
-          <th class="px-3 py-2 border-b border-muted">Total Quantity</th>
+          <th class="px-3 py-2 border-b border-muted">Material & Quantity</th>
           <th class="px-3 py-2 border-b border-muted">Total Price</th>
           <th class="px-3 py-2 border-b border-muted">Status</th>
-          <th class="px-3 py-2 border-b border-muted">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -56,7 +55,10 @@
             <td class="px-3 py-2 border-b border-muted">{{ offer.offer_id }}</td>
             <td class="px-3 py-2 border-b border-muted">{{ offer.offerrequestdetail.request_detail.pr.project.project_name }}</td>
             <td class="px-3 py-2 border-b border-muted">{{ offer.offer_date|date:"Y-m-d H:i" }}</td>
-            <td class="px-3 py-2 border-b border-muted">{{ offer.total_quantity }}</td>
+            <td class="px-3 py-2 border-b border-muted">
+              {{ offer.offerrequestdetail.request_detail.material.material_name }} –
+              {{ offer.total_quantity }} {{ offer.offerrequestdetail.request_detail.material.unit }}
+            </td>
             <td class="px-3 py-2 border-b border-muted">
               {% if offer.quantity_per_price > 0 %}
                 ₱ {{ offer.total_quantity|div:offer.quantity_per_price|mul:offer.unit_price|floatformat:2 }}
@@ -64,7 +66,6 @@
                 Invalid
               {% endif %}
             </td>
-            <td class="px-3 py-2 border-b border-muted">{{ offer.offer_status }}</td>
             <td class="px-3 py-2 border-b border-muted">
               {% if offer.offer_status == 'Pending' %}
               <div class="flex flex-col sm:flex-row gap-2">

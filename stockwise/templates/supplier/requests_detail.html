@@ -13,18 +13,29 @@
     </a>
   </p>
 
-  <p class="mb-2">
-    <strong class="text-secondary">Project:</strong> {{ purchase_request.project.project_name }}
+<div class="flex justify-between items-center mb-2">
+  <h3 class="text-2xl sm:text-3xl font-bold text-primary">
+    {{ purchase_request.project.project_name }}
+  </h3>
+  <p class="text-sm sm:text-base">
+    <strong class="text-secondary">🗓️ Request Date:</strong> {{ purchase_request.request_date }}
   </p>
-  <p class="mb-2">
-    <strong class="text-secondary">Request Date:</strong> {{ purchase_request.request_date }}
+</div>
+
+<div class="flex justify-between mb-4">
+  <p>
+    <strong class="text-secondary">📍Location:</strong> {{ purchase_request.project.project_location }}
   </p>
-  <p class="mb-4">
+  <p>
     <strong class="text-secondary">Requested By:</strong> {{ purchase_request.requested_by.username }}
   </p>
+</div>
 
-  <h3 class="text-xl font-semibold mb-4 text-secondary">Materials Requested:</h3>
-  
+
+<hr class="border-primary mb-6" />
+
+<h3 class="text-xl font-semibold mb-4 text-secondary ml-4">Materials Requested:</h3>
+
  {% if request_details %}
   <ul class="space-y-3">
     {% for detail in request_details %}

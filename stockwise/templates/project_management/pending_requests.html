@@ -47,9 +47,10 @@
       {% for pr in purchase_requests %}
         <div class="relative border border-primary rounded-lg p-4 bg-surface/80 shadow-sm flex flex-col min-h-[300px]">
 
-          <h3 class="text-2xl sm:text-3xl font-bold text-primary mb-4">{{ pr.project.project_name }}</h3>
-          <p class="mb-1"><strong>Status:</strong> {{ pr.request_status }}</p>
-          <p class="mb-3"><strong>Requested by:</strong> {{ pr.requested_by }}</p>
+        <h3 class="text-2xl sm:text-3xl font-bold text-primary mb-4">{{ pr.project.project_name }}</h3>
+        <p class="text-secondary text-base sm:text-lg mb-2">📍 Location: {{ pr.project.project_location }}</p>
+        <p class="text-secondary text-base sm:text-lg mb-6">🗓️ Request Date: {{ pr.request_date|date:"F j, Y" }}</p>
+        <p class="mb-3"><strong>Requested by:</strong> {{ pr.requested_by }}</p>
 
           <div class="mb-4">
             <h4 class="font-semibold mb-2 text-secondary">Request Details:</h4>
@@ -85,12 +86,16 @@
               </form>
             </div>
           {% endif %}
-
           {% if pr.request_status == 'Approved' %}
             <span class="absolute bottom-3 right-3 bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">
               Approved
             </span>
+          {% else %}
+            <span class="absolute bottom-3 right-3 bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full">
+              Not Approved
+            </span>
           {% endif %}
+
         </div>
       {% endfor %}
     </div>
