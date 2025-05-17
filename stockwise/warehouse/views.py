@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from user_management.decorators import user_type_required
-from stock_management.models import Project, ProjectInventory, InventoryMaterial
+from stock_management.models import Project, ProjectInventory, InventoryMaterial, PurchaseOrder, OfferPurchaseOrder
 
 from .forms import UpdateMaterialForm
 
@@ -58,3 +60,89 @@ def update_material_quantity(request, project_id, material_id):
         'form': form,
         'material': material,
     })
+
+def purchase_orders_list(request):
+    status_filter = request.GET.get('status')
+    project_filter = request.GET.get('project')
+
+    if request.method == 'POST':
+        po_id = request.POST.get('po_id')
+        try:
+            with transaction.atomic():
+                po = PurchaseOrder.objects.select_for_update().get(po_id=po_id)
+
+                if po.po_status == 'Completed':
+                    messages.info(request, "This order is already completed.")
+                else:
+                    po.po_status = 'Completed'
+                    po.save()
+
+                    opo = OfferPurchaseOrder.objects.select_related(
+                        'offer',
+                        'offer__offerrequestdetail',
+                        'offer__offerrequestdetail__request_detail',
+                        'offer__offerrequestdetail__request_detail__material',
+                        'offer__offerrequestdetail__request_detail__pr',
+                        'offer__offerrequestdetail__request_detail__pr__project'
+                    ).get(po=po)
+
+                    offer = opo.offer
+                    material = offer.offerrequestdetail.request_detail.material
+
+                    # Get the project from the purchase order path
+                    project = offer.offerrequestdetail.request_detail.pr.project
+
+                    try:
+                        project_inventory = ProjectInventory.objects.get(project=project)
+                    except ProjectInventory.DoesNotExist:
+                        messages.error(request, f"No inventory found for project {project.project_name}.")
+                        return redirect('warehouse:purchase_orders_list')
+
+                    inventory = project_inventory.inventory
+
+                    inventory_material, created = InventoryMaterial.objects.get_or_create(
+                        inventory=inventory,
+                        material=material,
+                        defaults={'im_id': generate_new_im_id(), 'quantity': 0}
+                    )
+
+                    inventory_material.quantity += offer.total_quantity
+                    inventory_material.save()
+
+                    messages.success(request, f"Purchase Order {po.po_id} completed and inventory updated.")
+
+        except PurchaseOrder.DoesNotExist:
+            messages.error(request, "Purchase order not found.")
+        except OfferPurchaseOrder.DoesNotExist:
+            messages.error(request, "OfferPurchaseOrder not found for this PO.")
+
+        return redirect(request.get_full_path())
+
+    purchase_orders = PurchaseOrder.objects.all().order_by('delivery_date').select_related(
+        'offerpurchaseorder__offer__offerrequestdetail__request_detail__pr__project'
+    )
+
+    if status_filter:
+        purchase_orders = purchase_orders.filter(po_status=status_filter)
+    if project_filter:
+        purchase_orders = purchase_orders.filter(
+            offerpurchaseorder__offer__offerrequestdetail__request_detail__pr__project__project_id=project_filter
+        )
+
+    all_projects = Project.objects.all().order_by('project_name')
+
+    return render(request, 'purchase_orders_list.html', {
+        'purchase_orders': purchase_orders,
+        'status_filter': status_filter,
+        'project_filter': project_filter,
+        'all_projects': all_projects,
+    })
+
+def generate_new_im_id():
+    last_im = InventoryMaterial.objects.order_by('-im_id').first()
+    if last_im:
+        last_id_num = int(last_im.im_id.strip('IM'))
+        new_id_num = last_id_num + 1
+    else:
+        new_id_num = 1
+    return f"IM{new_id_num:03d}"
