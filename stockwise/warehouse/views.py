@@ -1,11 +1,20 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
+
+from stock_management.models import (
+    InventoryMaterial,
+    OfferPurchaseOrder,
+    Project,
+    ProjectInventory,
+    PurchaseOrder,
+)
+
 from user_management.decorators import user_type_required
-from stock_management.models import Project, ProjectInventory, InventoryMaterial, PurchaseOrder, OfferPurchaseOrder
 
 from .forms import UpdateMaterialForm
+
 
 @login_required
 @user_type_required('warehouse')
@@ -13,11 +22,13 @@ def home_warehouse(request):
     return render(request, 'home_warehouse.html')
 
 @login_required
+@user_type_required('warehouse')
 def projects_list(request):
     projects = Project.objects.all()
     return render(request, 'warehouse/projects_list.html', {'projects': projects})
 
 @login_required
+@user_type_required('warehouse')
 def project_detail(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
 
@@ -61,6 +72,8 @@ def update_material_quantity(request, project_id, material_id):
         'material': material,
     })
 
+@login_required
+@user_type_required('warehouse')
 def purchase_orders_list(request):
     status_filter = request.GET.get('status')
     project_filter = request.GET.get('project')
