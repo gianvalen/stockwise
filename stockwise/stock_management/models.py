@@ -10,7 +10,7 @@ class Material(models.Model):
     low_stock_threshold = models.IntegerField()
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'material'
 
     def __str__(self):
@@ -35,10 +35,12 @@ class InventoryMaterial(models.Model):
     quantity = models.IntegerField()
     initial_quantity = models.IntegerField(default=0)
 
+    # Add this new field to track transferred out quantity separately
+    transferred_out = models.IntegerField(default=0)
+
     def save(self, *args, **kwargs):
         is_update = False
 
-        # Only check for previous record if it's not a brand new object
         if self.pk:
             try:
                 old = InventoryMaterial.objects.get(pk=self.pk)
@@ -55,21 +57,18 @@ class InventoryMaterial(models.Model):
                 else:
                     self.initial_quantity += delta
         else:
-            # First creation: set initial_quantity to quantity if not explicitly set
             if self.initial_quantity is None:
                 self.initial_quantity = self.quantity
 
         super().save(*args, **kwargs)
 
-
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'inventory_material'
         unique_together = ('material', 'inventory')
 
     def __str__(self):
         return f"{self.material} in {self.inventory}"
-
 
 class InventoryUpdate(models.Model):
     inventory_update_id = models.CharField(primary_key=True, max_length=5)
@@ -78,7 +77,7 @@ class InventoryUpdate(models.Model):
     date_updated = models.DateTimeField()
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'inventory_update'
 
 class Offer(models.Model):
@@ -98,7 +97,7 @@ class Offer(models.Model):
     offered_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'offer'
 
 
@@ -107,7 +106,7 @@ class OfferPurchaseOrder(models.Model):
     offer = models.ForeignKey(Offer, models.DO_NOTHING)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'offer_purchase_order'
 
 
@@ -116,7 +115,7 @@ class OfferRequestDetail(models.Model):
     request_detail = models.ForeignKey('RequestDetail', models.DO_NOTHING)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'offer_request_detail'
 
 
@@ -126,7 +125,7 @@ class Project(models.Model):
     project_location = models.CharField(max_length=255)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'project'
 
     def __str__(self):
@@ -138,7 +137,7 @@ class ProjectInventory(models.Model):
     inventory = models.ForeignKey(Inventory, models.DO_NOTHING)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'project_inventory'
 
     def __str__(self):
@@ -156,7 +155,7 @@ class PurchaseOrder(models.Model):
     po_status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='For Delivery') 
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'purchase_order'
 
 
@@ -174,7 +173,7 @@ class PurchaseRequest(models.Model):
     requested_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'purchase_request'
 
 
@@ -185,5 +184,5 @@ class RequestDetail(models.Model):
     quantity = models.IntegerField()
 
     class Meta:
-        # managed = False
+        managed = False
         db_table = 'request_detail'
