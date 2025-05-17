@@ -3,7 +3,6 @@ import random
 import string
 import uuid
 
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Case, When, BooleanField, Value, F
 from django.shortcuts import render, redirect, get_object_or_404
@@ -105,7 +104,7 @@ def request_material(request, project_id):
                     detail.request_detail_id = str(uuid.uuid4()).replace('-', '')[:5]
                     detail.save()
 
-            return redirect('procurement:projects_list')
+            return redirect('procurement:my_requests')
     else:
         formset = MaterialFormSet()
         # Assign grouped choices for initial GET request rendering
@@ -132,10 +131,8 @@ def pending_offers(request):
 
         if action == 'accept':
             offer.offer_status = 'Accepted'
-            messages.success(request, f"Offer {offer_id} has been accepted.")
         elif action == 'reject':
             offer.offer_status = 'Rejected'
-            messages.success(request, f"Offer {offer_id} has been rejected.")
 
         offer.save()
 

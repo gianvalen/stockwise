@@ -2,6 +2,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
+from django.db.models import Case, When, Value, BooleanField, F
+
 
 from stock_management.models import (
     InventoryMaterial,
@@ -27,30 +29,32 @@ def projects_list(request):
     projects = Project.objects.all()
     return render(request, 'warehouse/projects_list.html', {'projects': projects})
 
+from django.db.models import Case, When, Value, BooleanField, F
+
 @login_required
 @user_type_required('warehouse')
 def project_detail(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
-
-    # Get the ProjectInventory instance linked to this project
     project_inventory = get_object_or_404(ProjectInventory, project=project)
 
-    # Get all InventoryMaterial entries for the inventory
-    materials_in_inventory = InventoryMaterial.objects.filter(inventory=project_inventory.inventory).select_related('material')
+    materials_in_inventory = InventoryMaterial.objects.filter(
+        inventory=project_inventory.inventory
+    ).select_related('material').annotate(
+        is_low_stock=Case(
+            When(quantity__lte=F('material__low_stock_threshold'), then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField()
+        )
+    )
 
-    # Build the report
     report = []
     for item in materials_in_inventory:
         if item.initial_quantity is None:
             item.initial_quantity = item.quantity
             item.save()
 
-        total_used = item.initial_quantity - item.quantity
-
-        if item.initial_quantity > 0:
-            percentage_used = (total_used / item.initial_quantity) * 100
-        else:
-            percentage_used = 0
+        total_used = max((item.initial_quantity - item.quantity) - item.transferred_out, 0)
+        percentage_used = (total_used / item.initial_quantity) * 100 if item.initial_quantity > 0 else 0
 
         report.append({
             'material_name': item.material.material_name,
@@ -59,6 +63,7 @@ def project_detail(request, project_id):
             'total_used': total_used,
             'percentage_used': round(percentage_used, 2),
             'unit': item.material.unit,
+            'transferred_quantity': item.transferred_out or 0,
         })
 
     context = {
@@ -67,6 +72,7 @@ def project_detail(request, project_id):
         'report': report,
     }
     return render(request, 'warehouse/project_detail.html', context)
+
 
 @login_required
 @user_type_required('warehouse')
@@ -108,9 +114,7 @@ def purchase_orders_list(request):
             with transaction.atomic():
                 po = PurchaseOrder.objects.select_for_update().get(po_id=po_id)
 
-                if po.po_status == 'Completed':
-                    messages.info(request, "This order is already completed.")
-                else:
+                if po.po_status != 'Completed':  # Fix here
                     po.po_status = 'Completed'
                     po.save()
 
@@ -126,13 +130,11 @@ def purchase_orders_list(request):
                     offer = opo.offer
                     material = offer.offerrequestdetail.request_detail.material
 
-                    # Get the project from the purchase order path
                     project = offer.offerrequestdetail.request_detail.pr.project
 
                     try:
                         project_inventory = ProjectInventory.objects.get(project=project)
                     except ProjectInventory.DoesNotExist:
-                        messages.error(request, f"No inventory found for project {project.project_name}.")
                         return redirect('warehouse:purchase_orders_list')
 
                     inventory = project_inventory.inventory
@@ -145,15 +147,13 @@ def purchase_orders_list(request):
 
                     inventory_material.quantity += offer.total_quantity
                     inventory_material.save()
-
-                    messages.success(request, f"Purchase Order {po.po_id} completed and inventory updated.")
-
         except PurchaseOrder.DoesNotExist:
             messages.error(request, "Purchase order not found.")
         except OfferPurchaseOrder.DoesNotExist:
             messages.error(request, "OfferPurchaseOrder not found for this PO.")
 
         return redirect(request.get_full_path())
+
 
     purchase_orders = PurchaseOrder.objects.all().order_by('delivery_date').select_related(
         'offerpurchaseorder__offer__offerrequestdetail__request_detail__pr__project'
@@ -168,8 +168,25 @@ def purchase_orders_list(request):
 
     all_projects = Project.objects.all().order_by('project_name')
 
+    # Calculate total price for each purchase order
+    po_with_price = []
+    for po in purchase_orders:
+        try:
+            offer = po.offerpurchaseorder.offer
+            if offer.quantity_per_price > 0:
+                total_price = (offer.total_quantity / offer.quantity_per_price) * offer.unit_price
+            else:
+                total_price = 0
+        except (AttributeError, OfferPurchaseOrder.DoesNotExist):
+            total_price = 0
+
+        po_with_price.append({
+            'po': po,
+            'total_price': total_price,
+        })
+
     return render(request, 'purchase_orders_list.html', {
-        'purchase_orders': purchase_orders,
+        'purchase_orders': po_with_price,
         'status_filter': status_filter,
         'project_filter': project_filter,
         'all_projects': all_projects,
