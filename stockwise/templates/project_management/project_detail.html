@@ -62,6 +62,7 @@
         <tr>
           <th class="px-4 py-2 border-b border-muted">Material Name</th>
           <th class="px-4 py-2 border-b border-muted">Total Quantity</th>
+          <th class="px-4 py-2 border-b border-muted">Transferred Quantity</th>
           <th class="px-4 py-2 border-b border-muted">Total Quantity Used</th>
           <th class="px-4 py-2 border-b border-muted">Percentage Used</th>
         </tr>
@@ -71,6 +72,7 @@
           <tr class="border-t border-muted">
             <td class="px-4 py-2">{{ row.material_name }}</td>
             <td class="px-4 py-2">{{ row.total_quantity }} {{ row.unit }}</td>
+            <td class="px-4 py-2">{{ row.transferred_quantity }} {{ row.unit }}</td>
             <td class="px-4 py-2">{{ row.total_used }} {{ row.unit }}</td>
             <td class="px-4 py-2">{{ row.percentage_used }}%</td>
           </tr>
