@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load math_filters %}
 
 {% block title %}My Offers{% endblock %}
 
@@ -21,18 +22,20 @@
     </select>
   </div>
 
-  <!-- Project Filter -->
-  <div class="flex items-center gap-2 min-w-[220px]">
-    <label for="project" class="text-secondary font-medium mr-2 whitespace-nowrap">Filter by Project:</label>
-    <select name="project" id="project"
-            class="px-3 py-2 rounded border border-muted bg-surface text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
-            onchange="this.form.submit()">
-      <option value="" {% if not project_filter %}selected{% endif %}>All Projects</option>
-      {% for project_id, project_name in all_projects %}
-        <option value="{{ project_id }}" {% if project_filter == project_id|stringformat:"s" %}selected{% endif %}>{{ project_name }}</option>
-      {% endfor %}
-    </select>
-  </div>
+<!-- Project Filter -->
+<div class="flex items-center gap-2 min-w-[220px]">
+  <label for="project" class="text-secondary font-medium mr-2 whitespace-nowrap">Filter by Project:</label>
+  <select name="project" id="project"
+          class="px-3 py-2 rounded border border-muted bg-surface text-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+          onchange="this.form.submit()">
+    <option value="" {% if not project_filter %}selected{% endif %}>All Projects</option>
+    {% for project in all_projects %}
+      <option value="{{ project.project_id }}" {% if project_filter|stringformat:"s" == project.project_id|stringformat:"s" %}selected{% endif %}>
+        {{ project.project_name }}
+      </option>
+    {% endfor %}
+  </select>
+</div>
 
 </form>
 
@@ -44,6 +47,7 @@
           <th class="px-3 py-2 border-b border-muted">Date</th>
           <th class="px-3 py-2 border-b border-muted">Project</th>
           <th class="px-3 py-2 border-b border-muted">Material</th>
+          <th class="px-3 py-2 border-b border-muted">Total Price</th>
           <th class="px-3 py-2 border-b border-muted">Status</th>
         </tr>
       </thead>
@@ -60,6 +64,13 @@
               {{ offer.offerrequestdetail.request_detail.material.material_name }} —
               {{ offer.total_quantity }} {{ offer.offerrequestdetail.request_detail.material.unit }}
             </td>
+            <td class="px-3 py-2 border-b border-muted font-medium">
+              {% if offer.quantity_per_price > 0 %}
+                ₱ {{ offer.total_quantity|div:offer.quantity_per_price|mul:offer.unit_price|floatformat:2 }}
+              {% else %}
+                <span class="text-muted italic">Invalid</span>
+              {% endif %}
+            </td>
             <td class="px-3 py-2 border-b border-muted">
               {% if offer.offer_status_proj == "Accepted" %}
                 <span class="text-green-600 font-medium">Accepted</span>
@@ -68,7 +79,7 @@
               {% elif offer.offer_status_proj == "Rejected" or offer.offer_status == "Rejected" %}
                 <span class="text-red-600 font-medium">Rejected</span>
               {% else %}
-                <span class="text-secondary">Pending</span>
+                <span class="text-yellow-600">Pending</span>
               {% endif %}
             </td>
           </tr>

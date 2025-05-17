@@ -13,24 +13,23 @@
     {% with materials_in_inventory|dictsort:"material.material_name" as sorted_materials %}
       {% with non_empty_materials=sorted_materials|dictsort:"quantity" %}
         {% if non_empty_materials|length > 0 %}
-              <ul class="space-y-2 text-secondary">
-              {% for im in materials_in_inventory %}
-                {% if im.quantity > 0 %}
-                  <li class="border-b border-muted pb-2 flex items-center justify-between">
-                    <div>
-                      <span class="font-semibold">{{ im.material.material_name }}</span> ({{ im.material.material_type }}) —
-                      <span class="text-muted">{{ im.quantity }} {{ im.material.unit }}</span>
-                    </div>
-
-                    {% if im.is_low_stock %}
-                      <span class="ml-4 px-2 py-0.5 text-sm bg-yellow-400 text-red-700 rounded-md font-semibold">
-                        ⚠ Low Stock
-                      </span>
-                    {% endif %}
-                  </li>
-                {% endif %}
-              {% endfor %}
-            </ul>
+          <ul class="space-y-2 text-secondary">
+            {% for im in materials_in_inventory %}
+              {% if im.quantity > 0 %}
+                <li class="border-b border-muted pb-2 flex items-center justify-between">
+                  <div>
+                    <span class="font-semibold">{{ im.material.material_name }}</span> ({{ im.material.material_type }}) —
+                    <span class="text-muted">{{ im.quantity }} {{ im.material.unit }}</span>
+                  </div>
+                  {% if im.is_low_stock %}
+                    <span class="ml-4 px-2 py-0.5 text-sm bg-yellow-400 text-red-700 rounded-md font-semibold">
+                      ⚠ Low Stock
+                    </span>
+                  {% endif %}
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
         {% else %}
           <p class="text-muted">No materials found.</p>
         {% endif %}
@@ -53,32 +52,35 @@
   </div>
 </section>
 
-  <h4 class="text-md font-semibold mt-8 mb-3 text-secondary">Monthly Material Usage Report:</h4>
+<!-- ✅ Monthly Report Card Styled Like Others -->
+<section class="bg-surface/80 rounded-xl shadow-lg p-6 sm:p-10 border border-primary max-w-4xl mx-auto mt-8">
+  <h4 class="text-xl font-semibold text-primary mb-4">Materials Usage Report</h4>
+
   <div class="overflow-x-auto">
-    <table class="max-w-4xl mx-auto bg-surface/80 border border-primary rounded-xl p-6 shadow-md">
-      <thead class="bg-primary text-white">
+    <table class="w-full text-left text-secondary border border-muted rounded-lg overflow-hidden">
+      <thead class="bg-muted/20 text-base font-semibold text-primary">
         <tr>
-          <th class="py-2 px-4 text-left">Material Name</th>
-          <th class="py-2 px-4 text-left">Total Quantity</th>
-          <th class="py-2 px-4 text-left">Total Quantity Used</th>
-          <th class="py-2 px-4 text-left">Percentage Used</th>
+          <th class="px-4 py-2 border-b border-muted">Material Name</th>
+          <th class="px-4 py-2 border-b border-muted">Total Quantity</th>
+          <th class="px-4 py-2 border-b border-muted">Total Quantity Used</th>
+          <th class="px-4 py-2 border-b border-muted">Percentage Used</th>
         </tr>
       </thead>
       <tbody>
         {% for row in report %}
-          <tr class="border-t border-gray-200">
-            <td class="py-2 px-4">{{ row.material_name }} </td>
-            <td class="py-2 px-4">{{ row.total_quantity }} {{ row.unit }} </td>
-            <td class="py-2 px-4">{{ row.total_used }} {{ row.unit }} </td>
-            <td class="py-2 px-4">{{ row.percentage_used }}%</td>
+          <tr class="border-t border-muted">
+            <td class="px-4 py-2">{{ row.material_name }}</td>
+            <td class="px-4 py-2">{{ row.total_quantity }} {{ row.unit }}</td>
+            <td class="px-4 py-2">{{ row.total_used }} {{ row.unit }}</td>
+            <td class="px-4 py-2">{{ row.percentage_used }}%</td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="4" class="py-2 px-4 text-muted">No usage data available.</td>
+            <td colspan="4" class="px-4 py-2 text-muted text-center">No usage data available.</td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-
+</section>
 {% endblock %}

@@ -17,6 +17,17 @@
     <p class="mb-2"><strong>Material:</strong> {{ material.material_name }} ({{ material.unit }})</p>
     <p class="mb-6"><strong>Current Quantity:</strong> {{ current_qty }}</p>
 
+    <!-- Non-field errors -->
+    {% if form.non_field_errors %}
+      <div class="mb-4 p-3 bg-yellow-100 text-yellow-700 rounded border border-yellow-300">
+        <ul class="list-disc list-inside">
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
     <form method="post" class="grid grid-cols-1 md:grid-cols-3 gap-6">
       {% csrf_token %}
 
@@ -38,7 +49,7 @@
         {% endif %}
       </div>
 
-      <!-- Destination Project Field (without own project and without placeholder) -->
+      <!-- Destination Project Field -->
       <div>
         <label for="id_destination_project" class="block text-secondary font-semibold mb-1">Destination Project</label>
         <select
