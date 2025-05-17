@@ -1,14 +1,32 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from stock_management.models import PurchaseRequest, RequestDetail, ProjectInventory, InventoryMaterial, Project, Material, Offer, PurchaseOrder, OfferPurchaseOrder, Inventory
-from .forms import MaterialTransferForm
 from django.db import transaction
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
+from stock_management.models import (
+    Inventory,
+    InventoryMaterial,
+    Material,
+    Offer,
+    OfferPurchaseOrder,
+    Project,
+    ProjectInventory,
+    PurchaseOrder,
+    PurchaseRequest,
+    RequestDetail,
+)
 
+from .forms import MaterialTransferForm
+from user_management.decorators import user_type_required
+from django.contrib.auth.decorators import login_required
+
+@login_required
+@user_type_required('manager')
 def home_manager(request):
     return render(request, 'project_management/home_manager.html')
 
+@login_required
+@user_type_required('manager')
 def pending_requests(request):
     status_filter = request.GET.get('status')
     project_filter = request.GET.get('project')
@@ -70,6 +88,8 @@ def transfer_materials_home(request):
         'project_materials': project_materials,
     })
 
+@login_required
+@user_type_required('manager')
 def transfer_material(request, project_id, material_id):
     source_project = get_object_or_404(Project, project_id=project_id)
     material = get_object_or_404(Material, material_id=material_id)
@@ -129,6 +149,8 @@ def generate_new_im_id():
         new_id_num = 1
     return f"IM{new_id_num:03d}"
 
+@login_required
+@user_type_required('manager')
 def pending_offers_proj(request):
     status_filter = request.GET.get('status')
     project_filter = request.GET.get('project')
@@ -201,80 +223,3 @@ def generate_po_id():
     else:
         num = 1
     return f"PO{num:03d}"  # Format: PO001, PO002, etc.
-
-def purchase_orders_list(request):
-    status_filter = request.GET.get('status')
-    project_filter = request.GET.get('project')
-
-    if request.method == 'POST':
-        po_id = request.POST.get('po_id')
-        try:
-            with transaction.atomic():
-                po = PurchaseOrder.objects.select_for_update().get(po_id=po_id)
-
-                if po.po_status == 'Completed':
-                    messages.info(request, "This order is already completed.")
-                else:
-                    po.po_status = 'Completed'
-                    po.save()
-
-                    opo = OfferPurchaseOrder.objects.select_related(
-                        'offer',
-                        'offer__offerrequestdetail',
-                        'offer__offerrequestdetail__request_detail',
-                        'offer__offerrequestdetail__request_detail__material',
-                        'offer__offerrequestdetail__request_detail__pr',
-                        'offer__offerrequestdetail__request_detail__pr__project'
-                    ).get(po=po)
-
-                    offer = opo.offer
-                    material = offer.offerrequestdetail.request_detail.material
-
-                    # Get the project from the purchase order path
-                    project = offer.offerrequestdetail.request_detail.pr.project
-
-                    try:
-                        project_inventory = ProjectInventory.objects.get(project=project)
-                    except ProjectInventory.DoesNotExist:
-                        messages.error(request, f"No inventory found for project {project.project_name}.")
-                        return redirect('project_management:purchase_orders_list')
-
-                    inventory = project_inventory.inventory
-
-                    inventory_material, created = InventoryMaterial.objects.get_or_create(
-                        inventory=inventory,
-                        material=material,
-                        defaults={'im_id': generate_new_im_id(), 'quantity': 0}
-                    )
-
-                    inventory_material.quantity += offer.total_quantity
-                    inventory_material.save()
-
-                    messages.success(request, f"Purchase Order {po.po_id} completed and inventory updated.")
-
-        except PurchaseOrder.DoesNotExist:
-            messages.error(request, "Purchase order not found.")
-        except OfferPurchaseOrder.DoesNotExist:
-            messages.error(request, "OfferPurchaseOrder not found for this PO.")
-
-        return redirect(request.get_full_path())
-
-    purchase_orders = PurchaseOrder.objects.all().order_by('delivery_date').select_related(
-        'offerpurchaseorder__offer__offerrequestdetail__request_detail__pr__project'
-    )
-
-    if status_filter:
-        purchase_orders = purchase_orders.filter(po_status=status_filter)
-    if project_filter:
-        purchase_orders = purchase_orders.filter(
-            offerpurchaseorder__offer__offerrequestdetail__request_detail__pr__project__project_id=project_filter
-        )
-
-    all_projects = Project.objects.all().order_by('project_name')
-
-    return render(request, 'purchase_orders_list.html', {
-        'purchase_orders': purchase_orders,
-        'status_filter': status_filter,
-        'project_filter': project_filter,
-        'all_projects': all_projects,
-    })

@@ -77,11 +77,6 @@
                 {% csrf_token %}
               </form>
 
-              <a href="{% url 'project_management:purchase_orders_list' %}"
-                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'purchase_orders_list' %}text-primary font-bold{% endif %}">
-                Order Tracker
-              </a>
-
               <a href="{% url 'procurement:pending_offers' %}"
                  class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'pending_offers' %}text-primary font-bold{% endif %}">
                 Offers
@@ -142,14 +137,12 @@
                  class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'transfer_materials' %}text-primary font-bold{% endif %}">
                 Transfer Materials
               </a>
-              <a href="{% url 'project_management:purchase_orders_list' %}"
-                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'purchase_orders_list' %}text-primary font-bold{% endif %}">
-                Order Tracker
-              </a>
+              
               <a href="{% url 'project_management:pending_offers_proj' %}"
                  class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'pending_offers_proj' %}text-primary font-bold{% endif %}">
                 Pending Offers
               </a>
+
              <a href="{% url 'project_management:pending_requests'%}"
                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'pending_requests' %}text-primary font-bold{% endif %}">
                 Pending Requests
@@ -170,6 +163,11 @@
               <a href="{% url 'user_management:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
                  class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 cursor-pointer">
                 Logout
+              </a>
+
+              <a href="{% url 'warehouse:purchase_orders_list' %}"
+                 class="inline-block px-3 py-2 rounded hover:bg-primary/20 hover:text-primary transition-colors duration-200 {% if request.resolver_match.url_name == 'purchase_orders_list' %}text-primary font-bold{% endif %}">
+                Order Tracker
               </a>
 
               <a href="{% url 'warehouse:projects_list' %}"
@@ -197,7 +195,6 @@
         <a href="{% url 'procurement:projects_list' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">Projects</a>
         <a href="{% url 'procurement:my_requests' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'my_requests' %}text-primary font-bold{% endif %}">My Requests</a>
         <a href="{% url 'procurement:pending_offers' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'pending_offers' %}text-primary font-bold{% endif %}">Offers</a>
-        <a href="{% url 'project_management:purchase_orders_list' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'purchase_orders_list' %}text-primary font-bold{% endif %}">Order Tracker</a>
         <a href="{% url 'user_management:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 cursor-pointer">Logout</a>
         <form id="logout-form-mobile" action="{% url 'user_management:logout' %}" method="POST" class="hidden">{% csrf_token %}</form>
 
@@ -214,7 +211,6 @@
         <a href="{% url 'procurement:projects_list' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">Projects</a>
         <a href="{% url 'project_management:pending_requests' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'pending_requests' %}text-primary font-bold{% endif %}">Pending Requests</a>
         <a href="{% url 'project_management:pending_offers_proj' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'pending_offers_proj' %}text-primary font-bold{% endif %}">Pending Offers</a>
-        <a href="{% url 'project_management:purchase_orders_list' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'purchase_orders_list' %}text-primary font-bold{% endif %}">Order Tracker</a>
         <a href="{% url 'project_management:transfer_materials' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'transfer_materials' %}text-primary font-bold{% endif %}">Transfer Materials</a>
         <a href="{% url 'user_management:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 cursor-pointer">Logout</a>
         <form id="logout-form-mobile" action="{% url 'user_management:logout' %}" method="POST" class="hidden">{% csrf_token %}</form>
@@ -222,6 +218,7 @@
       {% elif request.user.profile.user_type == 'warehouse' %}
         <a href="{% url 'warehouse:home_warehouse' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'home_warehouse' %}text-primary font-bold{% endif %}">Home</a>
         <a href="{% url 'warehouse:projects_list' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'projects_list' %}text-primary font-bold{% endif %}">Projects</a>
+        <a href="{% url 'warehouse:purchase_orders_list' %}" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 {% if request.resolver_match.url_name == 'purchase_orders_list' %}text-primary font-bold{% endif %}">Order Tracker</a>
         <a href="{% url 'user_management:logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();" class="hover:text-primary hover:bg-primary/20 border-b border-gray-200 py-2 cursor-pointer">Logout</a>
         <form id="logout-form-mobile" action="{% url 'user_management:logout' %}" method="POST" class="hidden">{% csrf_token %}</form>
       {% endif %}

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import home_warehouse, projects_list, project_detail, update_material_quantity
+from .views import home_warehouse, projects_list, project_detail, update_material_quantity, purchase_orders_list
 
 app_name = 'warehouse'
 
@@ -8,4 +8,5 @@ urlpatterns = [
     path('projects/', projects_list, name='projects_list'),
     path('projects/<str:project_id>/', project_detail, name='project_detail'),
     path('projects/<str:project_id>/<str:material_id>/update/', update_material_quantity, name='update_material'),
+    path('orders/', purchase_orders_list, name='purchase_orders_list'),
 ]

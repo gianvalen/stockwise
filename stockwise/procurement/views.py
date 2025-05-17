@@ -1,17 +1,28 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from user_management.decorators import user_type_required
-from stock_management.models import Project, ProjectInventory, InventoryMaterial, PurchaseRequest, RequestDetail, Material, Offer
-from django.utils import timezone
-from .forms import RequestMaterialForm
-from django.db.models import Case, When, BooleanField, Value, F
-
-from django.forms import formset_factory
-import uuid
+from collections import defaultdict
 import random
 import string
-from collections import defaultdict
+import uuid
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db.models import Case, When, BooleanField, Value, F
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+
+from stock_management.models import (
+    Project,
+    ProjectInventory,
+    InventoryMaterial,
+    PurchaseRequest,
+    RequestDetail,
+    Material,
+    Offer,
+)
+
+from user_management.decorators import user_type_required
+from .forms import RequestMaterialForm
+from django.forms import formset_factory
+
 
 @login_required
 @user_type_required('procurement')
@@ -19,11 +30,13 @@ def home_procurement(request):
     return render(request, 'home_procurement.html')
 
 @login_required
+@user_type_required('procurement', 'manager')
 def projects_list(request):
     projects = Project.objects.all()
     return render(request, 'projects_list.html', {'projects': projects})
 
 @login_required
+@user_type_required('procurement', 'manager')
 def project_detail(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
     project_inventory = get_object_or_404(ProjectInventory, project=project)
@@ -43,6 +56,7 @@ def project_detail(request, project_id):
         'materials_in_inventory': materials_in_inventory,
     }
     return render(request, 'project_detail.html', context)
+
 def generate_pr_id():
     while True:
         pr_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
@@ -50,6 +64,7 @@ def generate_pr_id():
             return pr_id
 
 @login_required
+@user_type_required('procurement', 'manager')
 def request_material(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
 
@@ -101,9 +116,11 @@ def request_material(request, project_id):
         'grouped_choices': grouped_choices,  # Pass here for template use
     })
 
+@login_required
+@user_type_required('procurement')
 def pending_offers(request):
     status_filter = request.GET.get('status')
-    project_filter = request.GET.get('project')  # ← Add this line
+    project_filter = request.GET.get('project')
 
     # Handle Approve/Reject actions
     if request.method == 'POST':
@@ -151,7 +168,8 @@ def pending_offers(request):
     }
     return render(request, 'pending_offers_proc.html', context)
 
-
+@login_required
+@user_type_required('procurement')
 def my_requests(request):
     status_filter = request.GET.get('status')
     project_id_filter = request.GET.get('project')

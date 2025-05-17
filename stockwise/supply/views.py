@@ -1,11 +1,22 @@
 import random
 import string
-from django.utils import timezone
-from django.shortcuts import render, redirect, get_object_or_404
+
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from stock_management.models import (
+    Offer,
+    OfferRequestDetail,
+    PurchaseOrder,
+    PurchaseRequest,
+    RequestDetail,
+)
+
 from user_management.decorators import user_type_required
-from stock_management.models import PurchaseRequest, RequestDetail, OfferRequestDetail, Offer, PurchaseOrder
+
 from .forms import OfferForm
+
 
 @login_required
 @user_type_required('supplier')
@@ -13,6 +24,8 @@ def home_supplier(request):
     return render(request, 'home_supplier.html')
     # Fetch all purchase requests with their details
 
+@login_required
+@user_type_required('supplier')
 def requests_list(request):
     purchase_requests = PurchaseRequest.objects.select_related('project').filter(request_status='Approved')
 
