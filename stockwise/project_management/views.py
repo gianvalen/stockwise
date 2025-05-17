@@ -1,14 +1,32 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from stock_management.models import PurchaseRequest, RequestDetail, ProjectInventory, InventoryMaterial, Project, Material, Offer, PurchaseOrder, OfferPurchaseOrder, Inventory
-from .forms import MaterialTransferForm
 from django.db import transaction
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
+from stock_management.models import (
+    Inventory,
+    InventoryMaterial,
+    Material,
+    Offer,
+    OfferPurchaseOrder,
+    Project,
+    ProjectInventory,
+    PurchaseOrder,
+    PurchaseRequest,
+    RequestDetail,
+)
 
+from .forms import MaterialTransferForm
+from user_management.decorators import user_type_required
+from django.contrib.auth.decorators import login_required
+
+@login_required
+@user_type_required('manager')
 def home_manager(request):
     return render(request, 'project_management/home_manager.html')
 
+@login_required
+@user_type_required('manager')
 def pending_requests(request):
     status_filter = request.GET.get('status')
     project_filter = request.GET.get('project')
@@ -70,6 +88,8 @@ def transfer_materials_home(request):
         'project_materials': project_materials,
     })
 
+@login_required
+@user_type_required('manager')
 def transfer_material(request, project_id, material_id):
     source_project = get_object_or_404(Project, project_id=project_id)
     material = get_object_or_404(Material, material_id=material_id)
@@ -129,6 +149,8 @@ def generate_new_im_id():
         new_id_num = 1
     return f"IM{new_id_num:03d}"
 
+@login_required
+@user_type_required('manager')
 def pending_offers_proj(request):
     status_filter = request.GET.get('status')
     project_filter = request.GET.get('project')
