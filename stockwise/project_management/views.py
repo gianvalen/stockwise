@@ -47,6 +47,7 @@ def project_detail(request, project_id):
     project = get_object_or_404(Project, project_id=project_id)
     project_inventory = get_object_or_404(ProjectInventory, project=project)
 
+    # Get all inventory materials for this project
     materials_in_inventory = InventoryMaterial.objects.filter(
         inventory=project_inventory.inventory
     ).select_related('material').annotate(
@@ -57,36 +58,50 @@ def project_detail(request, project_id):
         )
     )
 
-    report = []
+    materials_report = []
+    equipment_report = []
+
     for item in materials_in_inventory:
         if item.initial_quantity is None:
             item.initial_quantity = item.quantity
             item.save()
 
-        total_used = max((item.initial_quantity - item.quantity) - item.transferred_out, 0)
+        material_type = item.material.material_type
 
-        if item.initial_quantity > 0:
-            percentage_used = (total_used / item.initial_quantity) * 100
+        if material_type == 'Equipment and Tools':
+            # Equipment and Tools Report Entry
+            equipment_report.append({
+                'equipment_name': item.material.material_name,
+                'total_quantity': item.initial_quantity,
+                'transferred_quantity': item.transferred_out or 0,
+                'unit': item.material.unit,
+            })
         else:
-            percentage_used = 0
+            # Materials Usage Report Entry
+            total_used = max((item.initial_quantity - item.quantity) - item.transferred_out, 0)
 
-        report.append({
-            'material_name': item.material.material_name,
-            'total_quantity': item.initial_quantity,
-            'current_quantity': item.quantity,
-            'total_used': total_used,
-            'percentage_used': round(percentage_used, 2),
-            'unit': item.material.unit,
-            'transferred_quantity': item.transferred_out or 0,
-        })
+            if item.initial_quantity > 0:
+                percentage_used = (total_used / item.initial_quantity) * 100
+            else:
+                percentage_used = 0
+
+            materials_report.append({
+                'material_name': item.material.material_name,
+                'total_quantity': item.initial_quantity,
+                'current_quantity': item.quantity,
+                'total_used': total_used,
+                'percentage_used': round(percentage_used, 2),
+                'unit': item.material.unit,
+                'transferred_quantity': item.transferred_out or 0,
+            })
 
     context = {
         'project': project,
+        'materials_report': materials_report,
         'materials_in_inventory': materials_in_inventory,
-        'report': report,
+        'equipment_report': equipment_report,
     }
     return render(request, 'project_management/project_detail.html', context)
-
 
 def generate_pr_id():
     while True:

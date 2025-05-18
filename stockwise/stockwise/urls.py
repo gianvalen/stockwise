@@ -22,11 +22,9 @@ from .views import HomePageView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('admin', admin.site.urls),
     path("__reload__/", include("django_browser_reload.urls")),
     path('', HomePageView.as_view(), name='home'),
     path('procurement/', include('procurement.urls')),
-    path('user/', include('user_management.urls')),
     path('supply/', include('supply.urls')),
     path('warehouse/', include('warehouse.urls')),
     path('manager/', include('project_management.urls')),

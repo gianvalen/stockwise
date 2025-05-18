@@ -54,7 +54,7 @@
 </div>
 
 <div class="max-w-4xl mx-auto bg-surface/80 border border-primary rounded-xl p-6 shadow-md mt-8">
-  <h4 class="text-md font-semibold mb-4 text-primary">Materials Usage Report:</h4>
+  <h4 class="text-md font-semibold mb-4 text-primary">Materials Usage Report</h4>
 
   <div class="overflow-x-auto">
     <table class="w-full text-left text-secondary">
@@ -68,7 +68,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for row in report %}
+        {% for row in materials_report %}
           <tr class="border-b border-muted">
             <td class="py-2 px-4">{{ row.material_name }}</td>
             <td class="py-2 px-4">{{ row.total_quantity }} {{ row.unit }}</td>
@@ -85,5 +85,35 @@
     </table>
   </div>
 </div>
+
+<!-- ✅ Monthly Report Card Styled Like Others -->
+<section class="bg-surface/80 rounded-xl shadow-lg p-6 sm:p-10 border border-primary max-w-4xl mx-auto mt-8">
+  <h4 class="text-xl font-semibold text-primary mb-4">Equipment and Tools Usage Report</h4>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-secondary border border-muted rounded-lg overflow-hidden">
+      <thead class="bg-muted/20 text-base font-semibold text-primary">
+        <tr>
+          <th class="px-4 py-2 border-b border-muted">Equipment Name</th>
+          <th class="px-4 py-2 border-b border-muted">Total Quantity</th>
+          <th class="px-4 py-2 border-b border-muted">Transferred Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in equipment_report %}
+          <tr class="border-t border-muted">
+            <td class="px-4 py-2">{{ row.equipment_name }}</td>
+            <td class="px-4 py-2">{{ row.total_quantity }} {{ row.unit }}</td>
+            <td class="px-4 py-2">{{ row.transferred_quantity }} {{ row.unit }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="px-4 py-2 text-muted text-center">No usage data available.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 
 {% endblock %}
