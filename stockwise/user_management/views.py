@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
 
+from .models import Profile
 from .forms import UserRegistrationForm
 
 # Create your views here.
@@ -12,7 +14,12 @@ def register(request):
         if form.is_valid():
             user = form.save()
             auth_login(request, user)
-            role = user.profile.user_type
+
+            try:
+                role = user.profile.user_type
+            except Profile.DoesNotExist:
+                messages.error(request, "Profile creation failed. Please contact support.")
+                return redirect('user_management:register')
 
             if role == 'manager':
                 return redirect('project_management:home_manager')
@@ -22,8 +29,9 @@ def register(request):
                 return redirect('procurement:home_procurement')
             elif role == 'supplier':
                 return redirect('supply:home_supplier')
-
-            return redirect('user_management:login')
+            else:
+                messages.warning(request, "Unknown role. Please contact admin.")
+                return redirect('user_management:login')
     else:
         form = UserRegistrationForm()
 
