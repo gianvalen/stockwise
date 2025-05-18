@@ -63,6 +63,7 @@ def project_detail(request, project_id):
                 'equipment_name': item.material.material_name,
                 'total_quantity': item.initial_quantity,
                 'transferred_quantity': item.transferred_out or 0,
+                'current_quantity': item.quantity,
                 'unit': item.material.unit,
             })
         else:

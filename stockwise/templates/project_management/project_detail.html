@@ -88,7 +88,7 @@
 
 <!-- ✅ Monthly Report Card Styled Like Others -->
 <section class="bg-surface/80 rounded-xl shadow-lg p-6 sm:p-10 border border-primary max-w-4xl mx-auto mt-8">
-  <h4 class="text-xl font-semibold text-primary mb-4">Equipment and Tools Usage Report</h4>
+  <h4 class="text-xl font-semibold text-primary mb-4">Equipment and Tools Inventory Report</h4>
 
   <div class="overflow-x-auto">
     <table class="w-full text-left text-secondary border border-muted rounded-lg overflow-hidden">
@@ -97,6 +97,7 @@
           <th class="px-4 py-2 border-b border-muted">Equipment Name</th>
           <th class="px-4 py-2 border-b border-muted">Total Quantity</th>
           <th class="px-4 py-2 border-b border-muted">Transferred Quantity</th>
+          <th class="px-4 py-2 border-b border-muted">Current Quantity</th>
         </tr>
       </thead>
       <tbody>
@@ -105,6 +106,7 @@
             <td class="px-4 py-2">{{ row.equipment_name }}</td>
             <td class="px-4 py-2">{{ row.total_quantity }} {{ row.unit }}</td>
             <td class="px-4 py-2">{{ row.transferred_quantity }} {{ row.unit }}</td>
+            <td class="px-4 py-2">{{ row.current_quantity }} {{ row.unit }}</td>
           </tr>
         {% empty %}
           <tr>
@@ -115,5 +117,6 @@
     </table>
   </div>
 </section>
+
 
 {% endblock %}
