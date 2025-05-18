@@ -68,8 +68,7 @@ def project_detail(request, project_id):
 
         material_type = item.material.material_type
 
-        if material_type == 'Equipment and Tools':
-            # Equipment and Tools Report Entry
+        if material_type == 'Equipment' or material_type == 'Tools':
             equipment_report.append({
                 'equipment_name': item.material.material_name,
                 'total_quantity': item.initial_quantity,
