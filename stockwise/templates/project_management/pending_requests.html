@@ -90,7 +90,7 @@
             <span class="absolute bottom-3 right-3 bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">
               Approved
             </span>
-          {% else %}
+          {% elif pr.request_status == 'Not Approved' %}
             <span class="absolute bottom-3 right-3 bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full">
               Not Approved
             </span>
