@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://stockwise-x3au.onrender.com']
+ALLOWED_HOSTS = ['stockwise-x3au.onrender.com']
 
 
 # Application definition
