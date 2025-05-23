@@ -28,6 +28,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = ['stockwise-x3au.onrender.com']
+CSRF_TRUSTED_ORIGINS = ['https://stockwise-x3au.onrender.com']
 
 
 # Application definition
