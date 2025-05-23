@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['https://stockwise-x3au.onrender.com']
 
 
 # Application definition
@@ -102,10 +102,11 @@ WSGI_APPLICATION = 'stockwise.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'stockwise',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
+        'NAME': os.getenv('DB_NAME', 'stockwise_deaa'),
+        'USER': os.getenv('DB_USER', 'stockwise_deaa_user'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'Ef6LatCuIik3qlt8AevAN15srI2Ut99o'),
+        'HOST': os.getenv('DB_HOST', 'dpg-d0o9eomuk2gs73fs97v0-a.singapore-postgres.render.com'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
