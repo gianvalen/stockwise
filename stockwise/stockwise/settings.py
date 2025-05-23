@@ -56,6 +56,7 @@ NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -145,6 +146,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_URL = 'static/'
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = DEBUG
 LOGIN_URL = '/user/login/'
 LOGOUT_REDIRECT_URL = '/user/login' 
 
