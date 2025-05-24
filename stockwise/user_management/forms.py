@@ -23,25 +23,26 @@ class UserRegistrationForm(UserCreationForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        email = cleaned_data.get('email')
-        user_type = cleaned_data.get('user_type')
+
         first_name = cleaned_data.get('first_name', '').strip().lower()
         last_name = cleaned_data.get('last_name', '').strip().lower()
         username = cleaned_data.get('username', '').strip().lower()
+        email = cleaned_data.get('email', '').strip().lower()
+        user_type = cleaned_data.get('user_type')
 
-        # Username format check
+        # ✅ Check username format: must be firstname.lastname
         expected_username = f"{first_name}.{last_name}"
         if username and username != expected_username:
             self.add_error('username', f"Username must be in the format: firstname.lastname (e.g., {expected_username})")
 
-        # Email domain check
-        if email and user_type:
-            domain = email.split('@')[-1].lower()
-            supplier_domains = [
-                'gmail.com', 'yahoo.com', 'outlook.com',
-                'hotmail.com', 'icloud.com', 'mail.com', 'protonmail.com'
-            ]
+        # ✅ Check email domain based on user type
+        supplier_domains = [
+            'gmail.com', 'yahoo.com', 'outlook.com',
+            'hotmail.com', 'icloud.com', 'mail.com', 'protonmail.com'
+        ]
 
+        if email and user_type:
+            domain = email.split('@')[-1]
             if user_type in ['procurement', 'manager', 'warehouse']:
                 if domain != 'coredwell.com':
                     self.add_error('email', "Users with this role must use an @coredwell.com email.")
@@ -51,9 +52,14 @@ class UserRegistrationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.first_name = self.cleaned_data['first_name']
-        user.last_name = self.cleaned_data['last_name']
+        user.first_name = self.cleaned_data['first_name'].strip()
+        user.last_name = self.cleaned_data['last_name'].strip()
+        user.username = self.cleaned_data['username'].strip().lower()
+        user.email = self.cleaned_data['email'].strip().lower()
+
         if commit:
             user.save()
+            # 🔒 Create the profile after user is saved
             Profile.objects.create(user=user, user_type=self.cleaned_data['user_type'])
+
         return user
